@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import AuthModal from '../components/AuthModal';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Home() {
   const [authOpen, setAuthOpen] = useState(false);
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -21,18 +24,20 @@ export default function Home() {
         </p>
 
         <div className="mt-8 flex items-center justify-center gap-3">
-          <button
-            onClick={() => setAuthOpen(true)}
-            className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800"
-          >
-            Login
-          </button>
-          <a
-            href="#projects"
+          {!user && (
+            <button
+              onClick={() => setAuthOpen(true)}
+              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800"
+            >
+              Login
+            </button>
+          )}
+          <Link
+            to="/projects"
             className="text-sm text-gray-700 hover:text-gray-900"
           >
             View projects
-          </a>
+          </Link>
         </div>
       </main>
 

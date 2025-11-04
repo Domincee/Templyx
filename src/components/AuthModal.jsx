@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-
-export default function AuthModal({ isOpen, onClose }) {
+export default function AuthModal({ isOpen, onClose, redirectPath = '/projects', overlayDelay = 900 }) {
   const {
     user,
     loading,
@@ -14,6 +14,8 @@ export default function AuthModal({ isOpen, onClose }) {
 
   const [mode, setMode] = useState('login'); // 'login' | 'register'
   const [form, setForm] = useState({ name: '', username: '', email: '', password: '' });
+  const [signingOut, setSigningOut] = useState(false);
+  const navigate = useNavigate();
 
   const displayName =
     user?.user_metadata?.name ||
@@ -69,10 +71,17 @@ export default function AuthModal({ isOpen, onClose }) {
               </div>
             </div>
             <button
-              onClick={signOut}
-              className="mt-6 w-full rounded-lg bg-gray-900 px-4 py-2 font-semibold text-white transition-all duration-200 hover:bg-gray-800"
+              onClick={async () => {
+                setSigningOut(true);
+                await signOut();
+                setSigningOut(false);
+                onClose?.();
+                navigate('/', { replace: true });
+              }}
+              disabled={signingOut}
+              className="mt-6 w-full rounded-lg bg-gray-900 px-4 py-2 font-semibold text-white transition-all duration-200 hover:bg-gray-800 disabled:opacity-50"
             >
-              Sign out
+              {signingOut ? 'Signing out...' : 'Sign out'}
             </button>
           </>
         ) : (
@@ -129,20 +138,24 @@ export default function AuthModal({ isOpen, onClose }) {
 
             {/* Form */}
             <form
-              className="mt-4 space-y-3"
-              onSubmit={async (e) => {
+                className="mt-4 space-y-3"
+                onSubmit={async (e) => {
                 e.preventDefault();
-                if (mode === 'login') {
-                  await loginWithEmail({ email: form.email, password: form.password });
-                } else {
-                  await registerWithEmail({
-                    email: form.email,
-                    password: form.password,
-                    name: form.name,
-                    username: form.username,
-                  });
-                }
-              }}
+                try {
+                    if (mode === 'login') {
+                    await loginWithEmail({ email: form.email, password: form.password });
+                    } else {
+                    await registerWithEmail({
+                        email: form.email,
+                        password: form.password,
+                        name: form.name,
+                        username: form.username,
+                    });
+                    }
+
+                    onClose?.();
+                } catch (_) {}
+                }}
             >
               {mode === 'register' && (
                 <>
@@ -179,9 +192,19 @@ export default function AuthModal({ isOpen, onClose }) {
                 required
               />
 
-              <button className="w-full rounded-lg bg-gray-900 px-4 py-2 font-semibold text-white transition-all duration-200 hover:bg-gray-800">
-                {mode === 'login' ? 'Login' : 'Create account'}
-              </button>
+             <button
+                onClick={async () => {
+                try {
+                    await signInWithFacebook();
+                    onClose?.();
+                } catch (_) {}
+                }}
+                className="mt-4 w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-200"
+            >
+                {/* ... */}
+            </button>
+
+
             </form>
 
             <p className="mt-4 text-center text-xs text-gray-500">
