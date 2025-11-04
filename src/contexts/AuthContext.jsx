@@ -33,9 +33,24 @@ export function AuthProvider({ children }) {
     setError('');
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'facebook',
-      options: { redirectTo: window.location.origin }
+      options: { redirectTo: window.location.origin },
     });
     if (error) setError(error.message);
+    return { error };
+  };
+
+  // ADD THIS
+  const signInWithGoogle = async () => {
+    setError('');
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,     // works local and prod
+        queryParams: { prompt: 'select_account' } // optional nicety
+      },
+    });
+    if (error) setError(error.message);
+    return { error };
   };
 
   const registerWithEmail = async ({ email, password, name, username }) => {
@@ -43,16 +58,17 @@ export function AuthProvider({ children }) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name, username } }
+      options: { data: { name, username } },
     });
     if (error) setError(error.message);
-    return data;
+    return { data, error };
   };
 
   const loginWithEmail = async ({ email, password }) => {
     setError('');
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) setError(error.message);
+    return { data, error };
   };
 
   const signOut = async () => {
@@ -62,7 +78,8 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider value={{
       user, loading, error,
-      signInWithFacebook, registerWithEmail, loginWithEmail, signOut
+      signInWithFacebook, signInWithGoogle, // expose Google
+      registerWithEmail, loginWithEmail, signOut
     }}>
       {children}
     </AuthContext.Provider>

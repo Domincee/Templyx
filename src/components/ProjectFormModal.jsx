@@ -63,7 +63,6 @@ function extractStoragePath(publicUrl) {
   return i >= 0 ? publicUrl.slice(i + marker.length) : null;
 }
 
-// -------- Component --------
 export default function ProjectFormModal({
   isOpen,
   onClose,
@@ -92,6 +91,18 @@ export default function ProjectFormModal({
   const [uploading, setUploading] = useState(false);
   const [imageUrlOk, setImageUrlOk] = useState(false);
 
+  // Show inline errors after submit or when a field has been blurred once
+  const [submitted, setSubmitted] = useState(false);
+  const [touched, setTouched] = useState({
+    title: false,
+    description: false,
+    toolsText: false,
+    imageUrl: false,
+    liveUrl: false,
+    repoUrl: false,
+  });
+  const touch = (k) => setTouched((t) => ({ ...t, [k]: true }));
+
   useEffect(() => {
     if (!initial) {
       setForm({
@@ -105,6 +116,8 @@ export default function ProjectFormModal({
       });
       setError('');
       setImageUrlOk(false);
+      setSubmitted(false);
+      setTouched({ title: false, description: false, toolsText: false, imageUrl: false, liveUrl: false, repoUrl: false });
       return;
     }
     setForm({
@@ -117,6 +130,8 @@ export default function ProjectFormModal({
       published: Boolean(initial.published),
     });
     setError('');
+    setSubmitted(false);
+    setTouched({ title: false, description: false, toolsText: false, imageUrl: false, liveUrl: false, repoUrl: false });
   }, [initial]);
 
   // Validate imageUrl by trying to load it
@@ -147,78 +162,77 @@ export default function ProjectFormModal({
       .filter(Boolean);
 
   // Upload with compression + delete previous
- async function uploadFile(file) {
-  if (!file) return;
-  if (!user) { setError('Please log in to upload.'); return; }
-  if (!LIMITS.allowed.includes(file.type)) {
-    setError('Allowed types: JPEG, PNG, WebP.');
-    return;
-  }
-
-  try {
-    setUploading(true);
-    setError('');
-
-    // Downscale/convert to WebP and cap to 2 MB
-    let blob = await downscaleToWebp(file, LIMITS.maxEdge, 0.82);
-    if (blob.size > LIMITS.maxBytes) {
-      blob = await downscaleToWebp(file, LIMITS.maxEdge, 0.7);
-    }
-    if (blob.size > LIMITS.maxBytes) {
-      setError('Image is too large after compression. Try a smaller image.');
+  async function uploadFile(file) {
+    if (!file) return;
+    if (!user) { setError('Please log in to upload.'); return; }
+    if (!LIMITS.allowed.includes(file.type)) {
+      setError('Allowed types: JPEG, PNG, WebP.');
       return;
     }
 
-    // Path must start with <uid>/ to satisfy your RLS policy
-    const path = `${user.id}/${Date.now()}.webp`;
-    const fileToUpload = new File([blob], 'image.webp', { type: 'image/webp' });
+    try {
+      setUploading(true);
+      setError('');
 
-    // Upload
-    const { data: uploadData, error } = await supabase
-      .storage
-      .from(BUCKET) // 'project-images'
-      .upload(path, fileToUpload, {
-        contentType: 'image/webp',
-        upsert: false,
-        cacheControl: '3600',
+      // Downscale/convert to WebP and cap to 2 MB
+      let blob = await downscaleToWebp(file, LIMITS.maxEdge, 0.82);
+      if (blob.size > LIMITS.maxBytes) {
+        blob = await downscaleToWebp(file, LIMITS.maxEdge, 0.7);
+      }
+      if (blob.size > LIMITS.maxBytes) {
+        setError('Image is too large after compression. Try a smaller image.');
+        return;
+      }
+
+      // Path must start with <uid>/ to satisfy RLS policy
+      const path = `${user.id}/${Date.now()}.webp`;
+      const fileToUpload = new File([blob], 'image.webp', { type: 'image/webp' });
+
+      const { data: uploadData, error: upErr } = await supabase
+        .storage.from(BUCKET)
+        .upload(path, fileToUpload, {
+          contentType: 'image/webp',
+          upsert: false,
+          cacheControl: '3600',
+        });
+
+      console.log({
+        bucket: BUCKET,
+        path,
+        userId: user?.id,
+        type: fileToUpload.type,
+        size: fileToUpload.size,
+        error: upErr,
+        uploadData,
       });
 
-    // DEBUG: log exactly what was sent and any error returned
-    console.log({
-      bucket: BUCKET,
-      path,                      // should start with `${user.id}/`
-      userId: user?.id,
-      type: fileToUpload.type,   // "image/webp"
-      size: fileToUpload.size,   // bytes (should be <= 2,097,152)
-      error,                     // if row-level security blocks, you'll see it here
-      uploadData,                // metadata from Storage if success
-    });
-
-    if (error) {
-      setError(error.message || 'Upload blocked by policy.');
-      return;
-    }
-
-    // Delete previous image to keep storage small (best‑effort)
-    if (form.imageUrl) {
-      const oldPath = extractStoragePath(form.imageUrl);
-      if (oldPath) {
-        const { error: delErr } = await supabase.storage.from(BUCKET).remove([oldPath]);
-        if (delErr) console.warn('Failed to delete old image:', delErr);
+      if (upErr) {
+        setError(upErr.message || 'Upload blocked by policy.');
+        return;
       }
-    }
 
-    // Set the new public URL into the form
-    const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
-    const publicUrl = data.publicUrl;
-    setForm((f) => ({ ...f, imageUrl: publicUrl }));
-  } catch (e) {
-    console.error('Upload failed:', e);
-    setError(e?.message || 'Upload failed.');
-  } finally {
-    setUploading(false);
+      // Delete previous image to keep storage small (best‑effort)
+      if (form.imageUrl) {
+        const oldPath = extractStoragePath(form.imageUrl);
+        if (oldPath) {
+          const { error: delErr } = await supabase.storage.from(BUCKET).remove([oldPath]);
+          if (delErr) console.warn('Failed to delete old image:', delErr);
+        }
+      }
+
+      // Set the new public URL into the form
+      const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+      const publicUrl = data.publicUrl;
+      setForm((f) => ({ ...f, imageUrl: publicUrl }));
+      setTouched((t) => ({ ...t, imageUrl: true }));
+    } catch (e) {
+      console.error('Upload failed:', e);
+      setError(e?.message || 'Upload failed.');
+    } finally {
+      setUploading(false);
+    }
   }
-}
+
   // DnD handlers
   const handleDrop = async (e) => {
     e.preventDefault();
@@ -228,20 +242,30 @@ export default function ProjectFormModal({
   };
 
   // Validations for all fields
-  const titleOk = form.title.trim().length >= 3;
-  const descOk = form.description.trim().length >= 10; // tweak if you want shorter
+  const titleLen = form.title.trim().length;
+  const titleTooShort = titleLen < 3;
+  const titleTooLong = titleLen > 25;
+  const titleOk = !titleTooShort && !titleTooLong;
+
+  const descOk = form.description.trim().length >= 25; // min 25 chars
   const toolsOk = parseTools(form.toolsText).length > 0;
   const liveOk = isValidHttpUrl(form.liveUrl);
   const repoOk = isValidGithubRepoUrl(form.repoUrl);
-  const imageOk = !!form.imageUrl && (imageUrlOk || isLikelyImageUrl(form.imageUrl));
+
+  const hasImage = !!form.imageUrl;
+  const imageUrlSyntaxOk = hasImage && isValidHttpUrl(form.imageUrl) && isLikelyImageUrl(form.imageUrl);
+  const imageOk = hasImage && (imageUrlOk || imageUrlSyntaxOk);
 
   const allValid = useMemo(
     () => titleOk && descOk && toolsOk && imageOk && liveOk && repoOk && !uploading,
     [titleOk, descOk, toolsOk, imageOk, liveOk, repoOk, uploading]
   );
 
+  const showError = (fieldValid, key) => (!fieldValid) && (submitted || touched[key]);
+
   const submit = async (e) => {
     e.preventDefault();
+    setSubmitted(true);
     setError('');
 
     if (!user) {
@@ -249,7 +273,8 @@ export default function ProjectFormModal({
       return;
     }
     if (!allValid) {
-      setError('Please complete all fields with valid values.');
+      // Let inline messages show; keep a general banner as well if you want
+      // setError('Please complete all fields with valid values.');
       return;
     }
 
@@ -295,11 +320,9 @@ export default function ProjectFormModal({
     if (!isEdit || !initial?.id) return;
     if (!confirm('Delete this project? This cannot be undone.')) return;
     try {
-      // Delete DB row
       const { error: delErr } = await supabase.from('projects').delete().eq('id', initial.id);
       if (delErr) throw delErr;
 
-      // Try to delete image file too (best-effort)
       if (initial.image_url) {
         const oldPath = extractStoragePath(initial.image_url);
         if (oldPath) await supabase.storage.from(BUCKET).remove([oldPath]);
@@ -340,31 +363,61 @@ export default function ProjectFormModal({
           </div>
         )}
 
-        <form className="mt-4 space-y-3" onSubmit={submit}>
-          <input
-            className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${titleOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'}`}
-            placeholder="Project title"
-            value={form.title}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
-            required
-          />
+        <form className="mt-4 space-y-4" onSubmit={submit}>
+          {/* Title */}
+          <div>
+            <input
+              className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                titleOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
+              }`}
+              placeholder="Project title (max 25 chars)"
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              onBlur={() => touch('title')}
+              maxLength={60}
+              required
+            />
+            {showError(titleOk, 'title') && (
+              <p className="mt-1 text-xs text-red-600">
+                {titleTooShort ? 'Title must be at least 3 characters.' : 'Max 25 characters.'}
+              </p>
+            )}
+          </div>
 
-          <textarea
-            className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${descOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'}`}
-            placeholder="Short description (min 10 chars)"
-            rows={3}
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            required
-          />
+          {/* Description */}
+          <div>
+            <textarea
+              className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                descOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
+              }`}
+              placeholder="Short description (min 25 chars)"
+              rows={4}
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onBlur={() => touch('description')}
+              required
+            />
+            {showError(descOk, 'description') && (
+              <p className="mt-1 text-xs text-red-600">Description must be at least 25 characters.</p>
+            )}
+          </div>
 
-          <input
-            className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${toolsOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'}`}
-            placeholder="Tools (comma separated, e.g. React, Tailwind, Supabase)"
-            value={form.toolsText}
-            onChange={(e) => setForm({ ...form, toolsText: e.target.value })}
-            required
-          />
+          {/* Tools */}
+          <div>
+            <input
+              className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                toolsOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
+              }`}
+              placeholder="Tools (comma separated, e.g. React, Tailwind, Supabase)"
+              value={form.toolsText}
+              onChange={(e) => setForm({ ...form, toolsText: e.target.value })}
+              onBlur={() => touch('toolsText')}
+              required
+            />
+            {showError(toolsOk, 'toolsText') && (
+              <p className="mt-1 text-xs text-red-600">Add at least one tool (comma separated).</p>
+            )}
+          </div>
 
           {/* Drag & Drop Upload */}
           <div
@@ -389,38 +442,66 @@ export default function ProjectFormModal({
           </div>
 
           {/* OR paste image URL */}
-          <input
-            className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
-              imageOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
-            }`}
-            placeholder="Image URL (optional if you uploaded above — we’ll fill it)"
-            value={form.imageUrl}
-            onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-            required
-          />
-          {form.imageUrl && (
-            <div className="text-xs text-gray-600">
-              {imageUrlOk
-                ? 'Image URL looks good.'
-                : (isLikelyImageUrl(form.imageUrl) ? 'Checking image…' : 'URL does not look like an image')}
-            </div>
-          )}
+          <div>
+            <input
+              className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                imageOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
+              }`}
+              placeholder="Image URL (optional if you uploaded above — will auto-fill)"
+              value={form.imageUrl}
+              onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+              onBlur={() => touch('imageUrl')}
+              required
+            />
+            {/* helper state/text */}
+            {form.imageUrl && imageUrlSyntaxOk && !imageUrlOk && (
+              <p className="mt-1 text-xs text-gray-600">Checking image…</p>
+            )}
+            {showError(imageOk, 'imageUrl') && (
+              <p className="mt-1 text-xs text-red-600">
+                {!hasImage
+                  ? 'Please upload an image or paste a valid image URL.'
+                  : (!imageUrlSyntaxOk
+                      ? 'Enter a valid image URL (http/https and ends with .jpg/.png/.webp).'
+                      : 'We could not load that image URL. Make sure it is publicly accessible.')}
+              </p>
+            )}
+          </div>
 
+          {/* Links */}
           <div className="grid gap-3 sm:grid-cols-2">
-            <input
-              className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${isValidHttpUrl(form.liveUrl) ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'}`}
-              placeholder="Live preview URL (https://...)"
-              value={form.liveUrl}
-              onChange={(e) => setForm({ ...form, liveUrl: e.target.value })}
-              required
-            />
-            <input
-              className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${isValidGithubRepoUrl(form.repoUrl) ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'}`}
-              placeholder="GitHub repository URL (https://github.com/owner/repo)"
-              value={form.repoUrl}
-              onChange={(e) => setForm({ ...form, repoUrl: e.target.value })}
-              required
-            />
+            <div>
+              <input
+                className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                  liveOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
+                }`}
+                placeholder="Live preview URL (https://...)"
+                value={form.liveUrl}
+                onChange={(e) => setForm({ ...form, liveUrl: e.target.value })}
+                onBlur={() => touch('liveUrl')}
+                required
+              />
+              {showError(liveOk, 'liveUrl') && (
+                <p className="mt-1 text-xs text-red-600">Enter a valid URL starting with http:// or https://</p>
+              )}
+            </div>
+            <div>
+              <input
+                className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                  repoOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
+                }`}
+                placeholder="GitHub repository URL (https://github.com/owner/repo)"
+                value={form.repoUrl}
+                onChange={(e) => setForm({ ...form, repoUrl: e.target.value })}
+                onBlur={() => touch('repoUrl')}
+                required
+              />
+              {showError(repoOk, 'repoUrl') && (
+                <p className="mt-1 text-xs text-red-600">
+                  GitHub URL must be in the form: https://github.com/owner/repo
+                </p>
+              )}
+            </div>
           </div>
 
           <label className="mt-2 flex items-center gap-2 text-sm text-gray-700">

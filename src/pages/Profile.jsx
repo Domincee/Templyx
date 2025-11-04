@@ -11,18 +11,86 @@ export default function Profile() {
   const [authOpen, setAuthOpen] = React.useState(false);
   const navigate = useNavigate();
 
-  // Basic profile display (from auth metadata)
-  const username =
-    user?.user_metadata?.username ??
-    user?.user_metadata?.preferred_username ??
-    null;
-
+  // Basic profile display (from auth metadata for name/email)
   const firstName =
     user?.user_metadata?.given_name ??
     user?.user_metadata?.first_name ??
     (user?.user_metadata?.name?.trim()?.split(/\s+/)[0]) ??
     (user?.user_metadata?.full_name?.trim()?.split(/\s+/)[0]) ??
     null;
+
+  // Load/edit username from profiles table
+  const [profile, setProfile] = React.useState(null);
+  const [profileLoading, setProfileLoading] = React.useState(true);
+  const [uEditing, setUEditing] = React.useState(false);
+  const [usernameInput, setUsernameInput] = React.useState('');
+  const [uSaving, setUSaving] = React.useState(false);
+  const [uError, setUError] = React.useState('');
+  const [uOk, setUOk] = React.useState('');
+
+  const loadProfileRow = React.useCallback(async () => {
+    if (!user) { setProfile(null); setProfileLoading(false); return; }
+    setProfileLoading(true);
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, username, full_name')
+      .eq('id', user.id)
+      .single();
+    if (!error) {
+      setProfile(data);
+      setUsernameInput(data?.username || '');
+      setUEditing(!data?.username); // auto-open edit if missing
+    } else {
+      // If row missing (should be inserted by trigger), keep editing on
+      setProfile(null);
+      setUsernameInput('');
+      setUEditing(true);
+    }
+    setProfileLoading(false);
+  }, [user]);
+
+  React.useEffect(() => { loadProfileRow(); }, [loadProfileRow]);
+
+  const validateUsername = (v) => /^[A-Za-z0-9_]{3,20}$/.test(v);
+
+  const saveUsername = async () => {
+    setUError('');
+    setUOk('');
+    const value = (usernameInput || '').trim();
+
+    if (!validateUsername(value)) {
+      setUError('Username must be 3–20 characters (letters, numbers, underscores).');
+      return;
+    }
+
+    try {
+      setUSaving(true);
+      // Upsert to ensure a row exists; unique index on lower(username) enforces uniqueness
+      const { data, error } = await supabase
+        .from('profiles')
+        .upsert({ id: user.id, username: value }, { onConflict: 'id' })
+        .select('id, username, full_name')
+        .single();
+
+      if (error) {
+        if (error.code === '23505' || /duplicate key|unique/i.test(error.message)) {
+          throw new Error('That username is taken. Try another.');
+        }
+        throw error;
+      }
+
+      setProfile(data);
+      setUEditing(false);
+      setUOk('Username saved!');
+
+      // Mirror to auth.user_metadata so Navbar/Profile update immediately
+      await supabase.auth.updateUser({ data: { username: data.username } });
+    } catch (e) {
+      setUError(e?.message || 'Failed to save username.');
+    } finally {
+      setUSaving(false);
+    }
+  };
 
   // My projects state
   const [myProjects, setMyProjects] = React.useState([]);
@@ -53,7 +121,6 @@ export default function Profile() {
   const openEdit = (proj) => { setEditingProject(proj); setProjectModalOpen(true); };
 
   const onSaved = (proj) => {
-    // Merge into list (update or insert)
     setMyProjects((prev) => {
       const idx = prev.findIndex((p) => p.id === proj.id);
       if (idx >= 0) {
@@ -79,19 +146,18 @@ export default function Profile() {
       .single();
     if (error) {
       alert(error.message);
-      return;
+    } else {
+      setMyProjects((prev) => prev.map((p) => (p.id === proj.id ? data : p)));
     }
-    setMyProjects((prev) => prev.map((p) => (p.id === proj.id ? data : p)));
   };
 
-  if (loading) {
+  if (loading || profileLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading…</div>;
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar onLoginClick={() => setAuthOpen(true)} />
-
       <main className="mx-auto max-w-5xl px-4 py-12">
         {!user ? (
           <div className="rounded-xl border border-gray-200 bg-white p-8 text-center">
@@ -109,15 +175,60 @@ export default function Profile() {
             {/* Profile header */}
             <div className="rounded-xl border border-gray-200 bg-white p-8">
               <h1 className="text-2xl font-semibold text-gray-900">Profile</h1>
+
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                {/* Username - editable */}
                 <div>
                   <div className="text-xs uppercase text-gray-500">Username</div>
-                  <div className="mt-1 font-medium text-gray-900">{username || '—'}</div>
+
+                  {!uEditing && profile?.username ? (
+                    <div className="mt-2 flex items-center gap-3">
+                      <div className="font-medium text-gray-900">{profile.username}</div>
+                      <button
+                        onClick={() => { setUEditing(true); setUError(''); setUOk(''); setUsernameInput(profile.username); }}
+                        className="text-xs text-gray-600 underline hover:text-gray-900"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="mt-2 flex items-center gap-2">
+                      <input
+                        className="w-full max-w-xs rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-gray-900"
+                        placeholder="Choose a username"
+                        value={usernameInput}
+                        onChange={(e) => { setUsernameInput(e.target.value); setUError(''); setUOk(''); }}
+                        disabled={uSaving}
+                      />
+                      <button
+                        onClick={saveUsername}
+                        disabled={uSaving}
+                        className="rounded-lg bg-gray-900 px-3 py-2 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-60"
+                      >
+                        {uSaving ? 'Saving…' : 'Save'}
+                      </button>
+                      {profile?.username && (
+                        <button
+                          onClick={() => { setUEditing(false); setUError(''); setUOk(''); setUsernameInput(profile.username); }}
+                          className="text-xs text-gray-600 underline hover:text-gray-900"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {uError && <p className="mt-1 text-xs text-red-600">{uError}</p>}
+                  {uOk && <p className="mt-1 text-xs text-green-600">{uOk}</p>}
                 </div>
+
+                {/* First name */}
                 <div>
                   <div className="text-xs uppercase text-gray-500">First name</div>
                   <div className="mt-1 font-medium text-gray-900">{firstName || '—'}</div>
                 </div>
+
+                {/* Email */}
                 <div className="sm:col-span-2">
                   <div className="text-xs uppercase text-gray-500">Email</div>
                   <div className="mt-1 font-medium text-gray-900">{user.email}</div>
@@ -140,7 +251,7 @@ export default function Profile() {
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-gray-900">My projects</h2>
                 <button
-                  onClick={openCreate}
+                  onClick={() => { setEditingProject(null); setProjectModalOpen(true); }}
                   className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800"
                 >
                   Publish
@@ -177,19 +288,12 @@ export default function Profile() {
                         <p className="mt-1 text-sm text-gray-600">{proj.description}</p>
 
                         <div className="mt-3 flex items-center justify-between">
-                          <button
-                            onClick={() => openEdit(proj)}
-                            className="text-sm font-medium text-gray-700 hover:text-gray-900"
-                          >
+                          <button onClick={() => openEdit(proj)} className="text-sm font-medium text-gray-700 hover:text-gray-900">
                             Edit
                           </button>
                           <button
                             onClick={() => togglePublish(proj)}
-                            className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                              proj.published
-                                ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
+                            className={`rounded-full px-3 py-1 text-xs font-semibold ${proj.published ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                           >
                             {proj.published ? 'Published' : 'Unpublished'}
                           </button>

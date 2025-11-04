@@ -59,6 +59,21 @@ export default function PostLoginRedirectOverlay({
     return () => clearTimeout(t);
   }, [user, navigate]);
 
+
+  // auto-hide overlay after (e.g.) 8 seconds if no session appears: after (e.g.) 8 seconds if no session appearsx
+    useEffect(() => {
+    if (!show || user) return;
+    const timeoutIfNoUserMs = 8000;
+    const t = setTimeout(() => {
+        // Hide overlay and clear pending flag
+        sessionStorage.removeItem('postLoginRedirect');
+        pending.current = null;
+        setShow(false);
+    }, timeoutIfNoUserMs);
+    return () => clearTimeout(t);
+    }, [show, user]);
+
+
   if (!show) return null;
 
   return (
