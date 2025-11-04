@@ -10,6 +10,7 @@ import { deleteAllUserStorage } from '../utils/storageCleanup';
 export default function Profile() {
     const [deleting, setDeleting] = React.useState(false);
     const [delErr, setDelErr] = React.useState('');
+    const [reactionCounts, setReactionCounts] = React.useState({});
 
     const { user, loading, signOut } = useAuth();
     const [authOpen, setAuthOpen] = React.useState(false);
@@ -164,10 +165,31 @@ export default function Profile() {
             .order('created_at', { ascending: false });
         if (error) setPError(error.message);
         setMyProjects(data || []);
-        setPLoading(false);
+        // Fetch reaction counts for user's projects
+      if (data && data.length > 0) {
+        fetchReactionCounts(data.map(p => p.id));
+      }
+      setPLoading(false);
     }, [user]);
 
     React.useEffect(() => { loadMyProjects(); }, [loadMyProjects]);
+
+    const fetchReactionCounts = async (projectIds) => {
+      try {
+        const { data: reactions } = await supabase
+          .from('project_reactions')
+          .select('reaction_type')
+          .in('project_id', projectIds);
+
+        const counts = { cool: 0, fire: 0, nice: 0 };
+        reactions?.forEach(r => {
+          counts[r.reaction_type]++;
+        });
+        setReactionCounts(counts);
+      } catch (error) {
+        console.error('Error fetching reaction counts:', error);
+      }
+    };
 
     const openCreate = () => { setEditingProject(null); setProjectModalOpen(true); };
     const openEdit = (proj) => { setEditingProject(proj); setProjectModalOpen(true); };
@@ -241,12 +263,14 @@ export default function Profile() {
                                 </div>
 
                                 <div className="flex flex-col justify-center">
-                                    <h1 className="text-2xl font-semibold text-gray-900">Profile</h1>
-                                    <p className="text-gray-500 text-sm mt-1">
-                                        Welcome back, {firstName || user.email}!
-                                    </p>
+                                <h1 className="text-2xl font-semibold text-gray-900">Profile</h1>
+                                <p className="text-gray-500 text-sm mt-1">
+                                Welcome back, {firstName || user.email}!
+                                </p>
                                 </div>
-                            </div>
+                                </div>
+
+                            
 
                             {/* Profile Details */}
                             <div className="grid gap-4 sm:grid-cols-2">
@@ -326,25 +350,42 @@ export default function Profile() {
                             </div>
 
                             {/* Buttons */}
-                            <div className="mt-6 flex flex-wrap gap-3">
-                                <button
-                                    onClick={async () => {
-                                        await signOut();
-                                        navigate('/', { replace: true });
-                                    }}
-                                    className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 transition animate-bounce-in cursor-pointer"
+                            <div className="mt-6 flex items-center justify-between">
+                            <div className="flex gap-3">
+                            <button
+                            onClick={async () => {
+                                await signOut();
+                                    navigate('/', { replace: true });
+                                }}
+                                className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 transition animate-bounce-in cursor-pointer"
                                     style={{ animationDelay: '0.2s' }}
-                                >
+                            >
                                     Sign out
                                 </button>
-                                <button
-                                    onClick={handleDeleteAccount}
-                                    disabled={deleting}
-                                    className="rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-60 transition animate-bounce-in cursor-pointer"
+                            <button
+                                onClick={handleDeleteAccount}
+                                disabled={deleting}
+                                className="rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-60 transition animate-bounce-in cursor-pointer"
                                     style={{ animationDelay: '0.4s' }}
-                                >
+                            >
                                     {deleting ? 'Deleting…' : 'Delete account'}
-                                </button>
+                                    </button>
+                                </div>
+                                <div className="flex items-center gap-6">
+                                    <p className="text-sm text-gray-700">Projects published: <span className="font-semibold">{myProjects.length}</span></p>
+                                    <div className="flex gap-2">
+                                        {[
+                                            { type: 'cool', src: 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGQweHE3MTVsa3JxNGg2Y3FzZThlcGQ1aW54MTU4N2xzanZlc3M0diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5gXYzsVBmjIsw/giphy.gif' },
+                                            { type: 'fire', src: 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMTBxZjMxbTliaXR4d2UzbDEyZnNoMW9tdmFxbmUzdzZxOGE4Y2FjMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/JQhWDr0NIkZHy/giphy.gif' },
+                                            { type: 'nice', src: 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3UzNXFtczhnOW1meGM1M3dyM3p2MmQ1OWtxaTN0eGp3YmhqbGwwbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/yJFeycRK2DB4c/giphy.gif' },
+                                        ].filter(r => reactionCounts[r.type] > 0).map(r => (
+                                            <div key={r.type} className="flex flex-col items-center">
+                                                <img src={r.src} alt={r.type} className="w-8 h-8 rounded" />
+                                                <span className="text-xs text-gray-500 mt-1">{reactionCounts[r.type]}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
 
                             {delErr && (
