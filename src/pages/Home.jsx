@@ -10,9 +10,9 @@ function CreateProjectCard({ onClick }) {
   return (
     <button
       onClick={onClick}
-      className="group flex w-full flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-gray-300 bg-white/70 p-8 text-center shadow-sm transition hover:border-gray-400 hover:bg-white"
+      className="group flex w-full flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-gray-300 bg-white/70 p-6 text-center shadow-sm transition hover:border-gray-400 hover:bg-white"
     >
-      <div className="grid h-16 w-16 place-items-center rounded-full bg-gray-100 text-gray-500 transition group-hover:bg-gray-200">
+      <div className="grid h-12 w-12 place-items-center rounded-full bg-gray-100 text-gray-500 transition group-hover:bg-gray-200">
         <span className="text-3xl leading-none">+</span>
       </div>
       <div>
@@ -23,13 +23,13 @@ function CreateProjectCard({ onClick }) {
   );
 }
 
-function ProjectCard({ project, onClick }) {
+function ProjectCard({ project, onClick, reactionCounts }) {
   return (
     <button
       onClick={onClick}
       className="group w-full overflow-hidden rounded-2xl border border-gray-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
     >
-      <div className="h-40 w-full bg-gray-100">
+      <div className="h-32 w-full bg-gray-100">
         {project.image_url ? (
           <img src={project.image_url} alt={project.title} className="h-full w-full object-cover" />
         ) : (
@@ -60,6 +60,20 @@ function ProjectCard({ project, onClick }) {
             ))}
           </div>
         )}
+
+        {/* Reaction displays */}
+        <div className="mt-3 flex gap-2">
+        {[
+          { type: 'cool', count: reactionCounts[project.id]?.cool || 0, src: 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGQweHE3MTVsa3JxNGg2Y3FzZThlcGQ1aW54MTU4N2xzanZlc3M0diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5gXYzsVBmjIsw/giphy.gif' },
+            { type: 'fire', count: reactionCounts[project.id]?.fire || 0, src: 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMTBxZjMxbTliaXR4d2UzbDEyZnNoMW9tdmFxbmUzdzZxOGE4Y2FjMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/JQhWDr0NIkZHy/giphy.gif' },
+            { type: 'nice', count: reactionCounts[project.id]?.nice || 0, src: 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3UzNXFtczhnOW1meGM1M3dyM3p2MmQ1OWtxaTN0eGp3YmhqbGwwbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/yJFeycRK2DB4c/giphy.gif' },
+          ].filter(r => r.count > 0).sort((a, b) => b.count - a.count).map(r => (
+            <div key={r.type} className="flex flex-col items-center">
+              <img src={r.src} alt={r.type} className="w-8 h-8 rounded" />
+              <span className="text-xs text-gray-500 mt-1">{r.count}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </button>
   );
@@ -73,6 +87,8 @@ export default function Home() {
   const [projects, setProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [error, setError] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [reactionCounts, setReactionCounts] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -83,8 +99,8 @@ export default function Home() {
       const { data, error: err } = await supabase
         .from('projects')
         .select(`
-          id, title, description, tools, image_url, created_at,
-          owner:profiles (username, full_name, avatar_url)
+        id, title, description, tools, category, image_url, created_at,
+        owner:profiles (username, full_name, avatar_url)
         `)
         .eq('published', true)
         .order('created_at', { ascending: false })
@@ -96,6 +112,10 @@ export default function Home() {
         setProjects([]);
       } else {
         setProjects(data || []);
+        // Fetch reaction counts
+        if (data && data.length > 0) {
+          fetchReactionCounts(data.map(p => p.id));
+        }
       }
       setLoadingProjects(false);
     };
@@ -105,10 +125,59 @@ export default function Home() {
     };
   }, []);
 
+  const fetchReactionCounts = async (projectIds) => {
+    try {
+      const { data: reactions } = await supabase
+        .from('project_reactions')
+        .select('project_id, reaction_type')
+        .in('project_id', projectIds);
+
+      const counts = {};
+      reactions?.forEach(r => {
+        if (!counts[r.project_id]) counts[r.project_id] = { cool: 0, fire: 0, nice: 0 };
+        counts[r.project_id][r.reaction_type]++;
+      });
+      setReactionCounts(counts);
+    } catch (error) {
+      console.error('Error fetching reaction counts:', error);
+    }
+  };
+
   const handleCreateClick = () => {
     if (!user) setAuthOpen(true);
     else setPublishOpen(true);
   };
+
+  const toggleReaction = async (projectId, type) => {
+    if (!user) {
+      setAuthOpen(true);
+      return;
+    }
+    try {
+      const { data: existing } = await supabase
+        .from('project_reactions')
+        .select('id')
+        .eq('project_id', projectId)
+        .eq('user_id', user.id)
+        .eq('reaction_type', type)
+        .maybeSingle();
+
+      if (existing) {
+        await supabase.from('project_reactions').delete().eq('id', existing.id);
+      } else {
+        await supabase.from('project_reactions').insert({
+          project_id: projectId,
+          user_id: user.id,
+          reaction_type: type
+        });
+      }
+      // Optionally refetch projects to update counts, but for now, just toggle
+    } catch (error) {
+      console.error('Error toggling reaction:', error);
+    }
+  };
+
+  const filteredProjects = selectedCategory === 'All' ? projects : projects.filter(p => p.category === selectedCategory);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -127,19 +196,39 @@ export default function Home() {
             {error}
           </div>
         ) : (
-          <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Create/publish card */}
-            <CreateProjectCard onClick={handleCreateClick} />
+          <>
+            {/* Category filter */}
+            <div className="mb-6 flex flex-wrap gap-2">
+              {['All', 'Portfolio', 'UI', 'Ecommerce'].map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                    selectedCategory === cat
+                      ? 'bg-black text-white'
+                      : 'bg-white text-black border border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
 
-            {/* Recent projects */}
-            {projects.map((p) => (
-              <ProjectCard
-                key={p.id}
-                project={p}
-                onClick={() => navigate('/projects')}
-              />
-            ))}
-          </section>
+            <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {/* Create/publish card */}
+              <CreateProjectCard onClick={handleCreateClick} />
+
+              {/* Recent projects */}
+              {filteredProjects.map((p) => (
+                <ProjectCard
+                  key={p.id}
+                  project={p}
+                  onClick={() => navigate('/projects')}
+                  reactionCounts={reactionCounts}
+                />
+              ))}
+            </section>
+          </>
         )}
       </main>
 

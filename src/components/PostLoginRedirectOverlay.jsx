@@ -11,7 +11,9 @@ export default function PostLoginRedirectOverlay({
   const navigate = useNavigate();
 
   const [show, setShow] = useState(false);
+  const [popped, setPopped] = useState(0);
   const pending = useRef(null); // { to, delayMs }
+  const items = ['🚀', '💼', '⭐', '🔥', '🎉'];
 
   // Listen for post-login event fired by AuthModal
   useEffect(() => {
@@ -43,6 +45,20 @@ export default function PostLoginRedirectOverlay({
       } catch {}
     }
   }, [defaultTo, defaultDelay]);
+
+  // Animation effect
+  useEffect(() => {
+    if (!show) return;
+    const interval = setInterval(() => {
+      setPopped(p => {
+        if (p < items.length) return p + 1;
+        if (p === items.length) return p + 1; // start disappearing
+        if (p > items.length && p < items.length * 2) return p + 1;
+        return p;
+      });
+    }, 200);
+    return () => clearInterval(interval);
+  }, [show, items.length]);
 
   // When user is available and we have a pending redirect, wait then navigate
   useEffect(() => {
@@ -77,9 +93,22 @@ export default function PostLoginRedirectOverlay({
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 grid place-items-center bg-white" style={{ zIndex }}>
-      <div className="flex flex-col items-center gap-4">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-gray-900" />
+  <div className="fixed inset-0 grid place-items-center bg-white" style={{ zIndex }}>
+  <div className="flex flex-col items-center gap-4">
+  <div className="flex gap-2">
+  {items.map((item, i) => {
+  const disappearCount = Math.max(0, popped - items.length);
+  const isVisible = i < popped && i < items.length - disappearCount;
+  return (
+  <span
+  key={i}
+  className={`text-2xl transition-opacity duration-300 ${isVisible ? 'opacity-100 animate-bounce' : 'opacity-0'}`}
+  >
+  {item}
+  </span>
+  );
+  })}
+  </div>
         <p className="text-sm text-gray-700">Signing you in…</p>
       </div>
     </div>

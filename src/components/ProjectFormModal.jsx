@@ -74,14 +74,15 @@ export default function ProjectFormModal({
   const isEdit = !!initial;
 
   const [form, setForm] = useState({
-    title: '',
-    description: '',
-    toolsText: '',
-    imageUrl: '',
-    liveUrl: '',
-    repoUrl: '',
+  title: '',
+  description: '',
+  toolsText: '',
+  category: '',
+  imageUrl: '',
+  liveUrl: '',
+  repoUrl: '',
     published: true,
-  });
+   });
 
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -94,11 +95,12 @@ export default function ProjectFormModal({
   // Show inline errors after submit or when a field has been blurred once
   const [submitted, setSubmitted] = useState(false);
   const [touched, setTouched] = useState({
-    title: false,
-    description: false,
-    toolsText: false,
-    imageUrl: false,
-    liveUrl: false,
+  title: false,
+  description: false,
+  toolsText: false,
+  category: false,
+  imageUrl: false,
+  liveUrl: false,
     repoUrl: false,
   });
   const touch = (k) => setTouched((t) => ({ ...t, [k]: true }));
@@ -106,27 +108,29 @@ export default function ProjectFormModal({
   useEffect(() => {
     if (!initial) {
       setForm({
-        title: '',
-        description: '',
-        toolsText: '',
-        imageUrl: '',
-        liveUrl: '',
-        repoUrl: '',
+      title: '',
+      description: '',
+      toolsText: '',
+      category: '',
+      imageUrl: '',
+      liveUrl: '',
+      repoUrl: '',
         published: true,
       });
       setError('');
       setImageUrlOk(false);
       setSubmitted(false);
-      setTouched({ title: false, description: false, toolsText: false, imageUrl: false, liveUrl: false, repoUrl: false });
+      setTouched({ title: false, description: false, toolsText: false, category: false, imageUrl: false, liveUrl: false, repoUrl: false });
       return;
     }
     setForm({
-      title: initial.title || '',
-      description: initial.description || '',
-      toolsText: Array.isArray(initial.tools) ? initial.tools.join(', ') : '',
-      imageUrl: initial.image_url || '',
-      liveUrl: initial.live_url || '',
-      repoUrl: initial.repo_url || '',
+    title: initial.title || '',
+    description: initial.description || '',
+    toolsText: Array.isArray(initial.tools) ? initial.tools.join(', ') : '',
+    category: initial.category || '',
+    imageUrl: initial.image_url || '',
+    liveUrl: initial.live_url || '',
+    repoUrl: initial.repo_url || '',
       published: Boolean(initial.published),
     });
     setError('');
@@ -249,6 +253,7 @@ export default function ProjectFormModal({
 
   const descOk = form.description.trim().length >= 25; // min 25 chars
   const toolsOk = parseTools(form.toolsText).length > 0;
+  const categoryOk = form.category.trim().length > 0;
   const liveOk = isValidHttpUrl(form.liveUrl);
   const repoOk = isValidGithubRepoUrl(form.repoUrl);
 
@@ -257,8 +262,8 @@ export default function ProjectFormModal({
   const imageOk = hasImage && (imageUrlOk || imageUrlSyntaxOk);
 
   const allValid = useMemo(
-    () => titleOk && descOk && toolsOk && imageOk && liveOk && repoOk && !uploading,
-    [titleOk, descOk, toolsOk, imageOk, liveOk, repoOk, uploading]
+  () => titleOk && descOk && toolsOk && categoryOk && imageOk && liveOk && repoOk && !uploading,
+  [titleOk, descOk, toolsOk, categoryOk, imageOk, liveOk, repoOk, uploading]
   );
 
   const showError = (fieldValid, key) => (!fieldValid) && (submitted || touched[key]);
@@ -281,29 +286,30 @@ export default function ProjectFormModal({
     try {
       setSaving(true);
       const payload = {
-        title: form.title.trim(),
-        description: form.description.trim(),
-        tools: parseTools(form.toolsText),
-        image_url: form.imageUrl.trim(),
-        live_url: form.liveUrl.trim(),
-        repo_url: form.repoUrl.trim(),
+      title: form.title.trim(),
+      description: form.description.trim(),
+      tools: parseTools(form.toolsText),
+      category: form.category.trim(),
+      image_url: form.imageUrl.trim(),
+      live_url: form.liveUrl.trim(),
+      repo_url: form.repoUrl.trim(),
         published: !!form.published,
       };
 
       let res;
       if (isEdit) {
         res = await supabase
-          .from('projects')
-          .update(payload)
-          .eq('id', initial.id)
-          .select('id, owner_id, title, description, tools, image_url, live_url, repo_url, published, created_at, updated_at')
-          .single();
+        .from('projects')
+        .update(payload)
+        .eq('id', initial.id)
+        .select('id, owner_id, title, description, tools, category, image_url, live_url, repo_url, published, created_at, updated_at')
+        .single();
       } else {
         res = await supabase
-          .from('projects')
-          .insert([{ ...payload, owner_id: user.id }])
-          .select('id, owner_id, title, description, tools, image_url, live_url, repo_url, published, created_at, updated_at')
-          .single();
+        .from('projects')
+        .insert([{ ...payload, owner_id: user.id }])
+        .select('id, owner_id, title, description, tools, category, image_url, live_url, repo_url, published, created_at, updated_at')
+        .single();
       }
 
       if (res.error) throw res.error;
@@ -338,11 +344,11 @@ export default function ProjectFormModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={handleClose}>
-      <div
-        className="w-full max-w-2xl rounded-2xl border border-gray-200 bg-white p-6 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={handleClose}>
+  <div
+  className="w-full max-w-lg rounded-2xl border border-gray-200 bg-white p-4 shadow-xl"
+  onClick={(e) => e.stopPropagation()}
+  >
         <div className="flex items-start justify-between">
           <h3 className="text-xl font-semibold text-gray-900">
             {isEdit ? 'Edit project' : 'Publish your project'}
@@ -404,18 +410,42 @@ export default function ProjectFormModal({
 
           {/* Tools */}
           <div>
-            <input
+          <input
+          className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+          toolsOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
+          }`}
+          placeholder="Tools (comma separated, e.g. React, Tailwind, Supabase)"
+          value={form.toolsText}
+          onChange={(e) => setForm({ ...form, toolsText: e.target.value })}
+          onBlur={() => touch('toolsText')}
+          required
+          />
+          {showError(toolsOk, 'toolsText') && (
+          <p className="mt-1 text-xs text-red-600">Add at least one tool (comma separated).</p>
+          )}
+          </div>
+
+          {/* Category */}
+          <div>
+            <select
               className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
-                toolsOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
+                categoryOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
               }`}
-              placeholder="Tools (comma separated, e.g. React, Tailwind, Supabase)"
-              value={form.toolsText}
-              onChange={(e) => setForm({ ...form, toolsText: e.target.value })}
-              onBlur={() => touch('toolsText')}
+              value={form.category}
+              onChange={(e) => setForm({ ...form, category: e.target.value })}
+              onBlur={() => touch('category')}
               required
-            />
-            {showError(toolsOk, 'toolsText') && (
-              <p className="mt-1 text-xs text-red-600">Add at least one tool (comma separated).</p>
+            >
+              <option value="">Select a category</option>
+              <option value="Portfolio">Portfolio</option>
+              <option value="UI">UI</option>
+              <option value="Ecommerce">Ecommerce</option>
+              <option value="Dashboard">Dashboard</option>
+              <option value="Blog">Blog</option>
+              <option value="Landing">Landing</option>
+            </select>
+            {showError(categoryOk, 'category') && (
+              <p className="mt-1 text-xs text-red-600">Please select a category.</p>
             )}
           </div>
 

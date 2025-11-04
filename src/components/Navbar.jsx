@@ -31,7 +31,7 @@ export default function Navbar({ onLoginClick }) {
   };
 
   return (
-    <nav className="sticky top-0 z-40 border-b border-gray-200 bg-white/70 backdrop-blur">
+    <nav className="sticky top-0 z-40 bg-white/70 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
         <Link to="/" className="text-lg font-bold">
           <span className="bg-gradient-to-r from-indigo-600 to-pink-500 bg-clip-text text-transparent">
@@ -43,7 +43,7 @@ export default function Navbar({ onLoginClick }) {
           <NavLink
             to="/home"
             className={({ isActive }) =>
-              `text-sm ${isActive ? 'text-gray-900' : 'text-gray-700 hover:text-gray-900'}`
+              `text-sm px-3 py-2 rounded-lg transition-all duration-300 ease-in-out ${isActive ? 'bg-black text-white' : 'text-black hover:bg-black hover:text-white'}`
             }
           >
             Home
@@ -52,7 +52,7 @@ export default function Navbar({ onLoginClick }) {
           <NavLink
             to="/projects"
             className={({ isActive }) =>
-              `text-sm ${isActive ? 'text-gray-900' : 'text-gray-700 hover:text-gray-900'}`
+              `text-sm px-3 py-2 rounded-lg transition-all duration-300 ease-in-out ${isActive ? 'bg-black text-white' : 'text-black hover:bg-black hover:text-white'}`
             }
           >
             Projects
@@ -61,7 +61,7 @@ export default function Navbar({ onLoginClick }) {
           <NavLink
             to="/about"
             className={({ isActive }) =>
-              `text-sm ${isActive ? 'text-gray-900' : 'text-gray-700 hover:text-gray-900'}`
+              `text-sm px-3 py-2 rounded-lg transition-all duration-300 ease-in-out ${isActive ? 'bg-black text-white' : 'text-black hover:bg-black hover:text-white'}`
             }
           >
             About

@@ -2,37 +2,67 @@ import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import AuthModal from '../components/AuthModal';
 import ProjectModal from '../components/ProjectModal';
+import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 
-function ProjectCard({ project, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className="group w-full overflow-hidden rounded-2xl border border-gray-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-    >
-      <div className="h-40 w-full bg-gray-100">
-        {project.image_url ? (
-          <img src={project.image_url} alt={project.title} className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full items-center justify-center bg-gradient-to-br from-indigo-500 to-pink-500 text-white">
-            <span className="text-lg font-semibold">{project.title?.[0]?.toUpperCase()}</span>
+function ProjectCard({ project, onClick, onReactionToggle, reactionCounts, userReactions }) {
+return (
+<div className="w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
+<button
+  onClick={onClick}
+    className="w-full text-left group"
+>
+<div className="h-40 w-full bg-gray-100">
+{project.image_url ? (
+    <img src={project.image_url} alt={project.title} className="h-full w-full object-cover" />
+) : (
+<div className="flex h-full items-center justify-center bg-gradient-to-br from-indigo-500 to-pink-500 text-white">
+    <span className="text-lg font-semibold">{project.title?.[0]?.toUpperCase()}</span>
+    </div>
+    )}
+  </div>
+<div className="p-4">
+  <h3 className="text-base font-semibold text-gray-900">{project.title}</h3>
+    <p className="mt-1 line-clamp-2 text-sm text-gray-600">{project.description}</p>
+      <p className="mt-1 text-xs text-gray-500">By {project.owner?.full_name || project.owner?.username || 'Anonymous'}</p>
+      </div>
+      </button>
+      {/* Reactions below the card */}
+      <div className="p-4 border-t border-gray-100">
+        <div className="flex gap-2">
+           <div className="flex flex-col items-center">
+            <button onClick={() => onReactionToggle?.(project.id, 'cool')} className={`p-2 rounded-lg transition hover:scale-110 ${userReactions[project.id] === 'cool' ? 'bg-blue-100 border-2 border-blue-500' : 'hover:bg-gray-100'}`}>
+              <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGQweHE3MTVsa3JxNGg2Y3FzZThlcGQ1aW54MTU4N2xzanZlc3M0diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5gXYzsVBmjIsw/giphy.gif" alt="cool" className="w-12 h-12 rounded-xl" />
+        </button>
+            <span className="text-xs text-gray-500 mt-1">{reactionCounts[project.id]?.cool || 0}</span>
+        </div>
+          <div className="flex flex-col items-center">
+            <button onClick={() => onReactionToggle?.(project.id, 'fire')} className={`p-2 rounded-lg transition hover:scale-110 ${userReactions[project.id] === 'fire' ? 'bg-red-100 border-2 border-red-500' : 'hover:bg-gray-100'}`}>
+          <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMTBxZjMxbTliaXR4d2UzbDEyZnNoMW9tdmFxbmUzdzZxOGE4Y2FjMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/JQhWDr0NIkZHy/giphy.gif" alt="fire" className="w-12 h-12 rounded-xl" />
+          </button>
+            <span className="text-xs text-gray-500 mt-1">{reactionCounts[project.id]?.fire || 0}</span>
+        </div>
+        <div className="flex flex-col items-center">
+            <button onClick={() => onReactionToggle?.(project.id, 'nice')} className={`p-2 rounded-lg transition hover:scale-110 ${userReactions[project.id] === 'nice' ? 'bg-green-100 border-2 border-green-500' : 'hover:bg-gray-100'}`}>
+              <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3UzNXFtczhnOW1meGM1M3dyM3p2MmQ1OWtxaTN0eGp3YmhqbGwwbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/yJFeycRK2DB4c/giphy.gif" alt="nice" className="w-12 h-12 rounded-xl" />
+            </button>
+            <span className="text-xs text-gray-500 mt-1">{reactionCounts[project.id]?.nice || 0}</span>
           </div>
-        )}
+        </div>
       </div>
-      <div className="p-4">
-        <h3 className="text-base font-semibold text-gray-900">{project.title}</h3>
-        <p className="mt-1 line-clamp-2 text-sm text-gray-600">{project.description}</p>
-      </div>
-    </button>
+    </div>
   );
 }
 
 export default function Projects() {
+  const { user } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
   const [projects, setProjects] = useState([]);
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
+  const [reactionCounts, setReactionCounts] = useState({});
+  const [userReactions, setUserReactions] = useState({});
 
   useEffect(() => {
     let alive = true;
@@ -50,11 +80,78 @@ export default function Projects() {
       if (!alive) return;
       if (error) setErr(error.message);
       setProjects(data || []);
+      // Fetch reaction counts
+      if (data && data.length > 0) {
+        fetchReactionCounts(data.map(p => p.id));
+      }
       setLoading(false);
     };
     load();
     return () => { alive = false; };
   }, []);
+
+  const fetchReactionCounts = async (projectIds) => {
+    try {
+      const { data: reactions } = await supabase
+        .from('project_reactions')
+        .select('project_id, reaction_type')
+        .in('project_id', projectIds);
+
+      const counts = {};
+      reactions?.forEach(r => {
+        if (!counts[r.project_id]) counts[r.project_id] = { cool: 0, fire: 0, nice: 0 };
+        counts[r.project_id][r.reaction_type]++;
+      });
+      setReactionCounts(counts);
+
+      // Fetch user reactions
+      if (user) {
+        const { data: userReacts } = await supabase
+          .from('project_reactions')
+          .select('project_id, reaction_type')
+          .eq('user_id', user.id)
+          .in('project_id', projectIds);
+
+        const userReactsObj = {};
+        userReacts?.forEach(r => {
+          userReactsObj[r.project_id] = r.reaction_type;
+        });
+        setUserReactions(userReactsObj);
+      }
+    } catch (error) {
+      console.error('Error fetching reaction data:', error);
+    }
+  };
+
+  const toggleReaction = async (projectId, type) => {
+    if (!user) {
+      setAuthOpen(true);
+      return;
+    }
+    try {
+      const current = userReactions[projectId];
+      if (current === type) {
+        // Remove
+        await supabase.from('project_reactions').delete().eq('project_id', projectId).eq('user_id', user.id).eq('reaction_type', type);
+        setUserReactions(prev => ({ ...prev, [projectId]: null }));
+      } else {
+        // Switch: first remove old if any, then insert new
+        if (current) {
+          await supabase.from('project_reactions').delete().eq('project_id', projectId).eq('user_id', user.id).eq('reaction_type', current);
+        }
+        await supabase.from('project_reactions').insert({
+          project_id: projectId,
+          user_id: user.id,
+          reaction_type: type
+        });
+        setUserReactions(prev => ({ ...prev, [projectId]: type }));
+      }
+      // Update counts
+      fetchReactionCounts(projects.map(p => p.id));
+    } catch (error) {
+      console.error('Error toggling reaction:', error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -80,7 +177,14 @@ export default function Projects() {
         ) : (
           <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map((p) => (
-              <ProjectCard key={p.id} project={p} onClick={() => setSelected(p)} />
+              <ProjectCard
+                key={p.id}
+                project={p}
+                onClick={() => setSelected(p)}
+                onReactionToggle={toggleReaction}
+                reactionCounts={reactionCounts}
+                userReactions={userReactions}
+              />
             ))}
           </section>
         )}
