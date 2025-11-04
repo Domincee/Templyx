@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-export default function AuthModal({ isOpen, onClose, redirectPath = '/projects', overlayDelay = 900 }) {
+
+export default function AuthModal({
+  isOpen,
+  onClose,
+  redirectPath = '/home',   // redirect to Home after overlay
+  overlayDelay = 900,       // tweak the loader time here per-use
+}) {
   const {
     user,
     loading,
@@ -14,8 +19,6 @@ export default function AuthModal({ isOpen, onClose, redirectPath = '/projects',
 
   const [mode, setMode] = useState('login'); // 'login' | 'register'
   const [form, setForm] = useState({ name: '', username: '', email: '', password: '' });
-  const [signingOut, setSigningOut] = useState(false);
-  const navigate = useNavigate();
 
   const displayName =
     user?.user_metadata?.name ||
@@ -28,24 +31,66 @@ export default function AuthModal({ isOpen, onClose, redirectPath = '/projects',
     user?.user_metadata?.preferred_username ||
     (user?.email ? user.email.split('@')[0] : '—');
 
+  // Tell the overlay to run (used for email/password paths)
+  const requestRedirect = () => {
+    const payload = { to: redirectPath, delayMs: overlayDelay };
+    try {
+      sessionStorage.setItem('postLoginRedirect', JSON.stringify(payload));
+    } catch {}
+    // Fire event so overlay shows without page reload
+    window.dispatchEvent(new CustomEvent('post-login', { detail: payload }));
+  };
+
   const handleClose = () => {
     onClose?.();
     setMode('login');
     setForm({ name: '', username: '', email: '', password: '' });
   };
 
+  // Email/password submit
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (mode === 'login') {
+        await loginWithEmail({ email: form.email, password: form.password });
+      } else {
+        await registerWithEmail({
+          email: form.email,
+          password: form.password,
+          name: form.name,
+          username: form.username,
+        });
+      }
+      requestRedirect(); // overlay after successful sign-in (no page reload)
+      onClose?.();
+    } catch {
+      // error is rendered from context as `error`
+    }
+  };
+
+  // Facebook OAuth: set fallback BEFORE redirect, don't await
+  const onFacebook = () => {
+    try {
+      sessionStorage.setItem(
+        'postLoginRedirect',
+        JSON.stringify({ to: redirectPath, delayMs: overlayDelay })
+      );
+    } catch {}
+    // Do NOT dispatch the event here: page will navigate away to Facebook
+    // The overlay will show after redirect-back via the sessionStorage fallback.
+    signInWithFacebook();
+    onClose?.();
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-      onClick={handleClose}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={handleClose}>
       <div
-        className="relative w-full max-w-md mx-4 rounded-2xl border border-gray-200 bg-white/80 p-6 text-gray-800 shadow-xl backdrop-blur-xl"
+        className="relative mx-4 w-full max-w-md rounded-2xl border border-gray-200 bg-white/80 p-6 text-gray-800 shadow-xl backdrop-blur-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close button */}
+        {/* Close */}
         <button
           aria-label="Close"
           onClick={handleClose}
@@ -60,28 +105,15 @@ export default function AuthModal({ isOpen, onClose, redirectPath = '/projects',
           <>
             <h2 className="mb-4 text-2xl font-semibold text-gray-900">Welcome 👋</h2>
             <div className="space-y-1 text-sm">
-              <div>
-                <strong>Name:</strong> {displayName || '—'}
-              </div>
-              <div>
-                <strong>Username:</strong> {username || '—'}
-              </div>
-              <div>
-                <strong>Email:</strong> {user.email}
-              </div>
+              <div><strong>Name:</strong> {displayName || '—'}</div>
+              <div><strong>Username:</strong> {username || '—'}</div>
+              <div><strong>Email:</strong> {user.email}</div>
             </div>
             <button
-              onClick={async () => {
-                setSigningOut(true);
-                await signOut();
-                setSigningOut(false);
-                onClose?.();
-                navigate('/', { replace: true });
-              }}
-              disabled={signingOut}
-              className="mt-6 w-full rounded-lg bg-gray-900 px-4 py-2 font-semibold text-white transition-all duration-200 hover:bg-gray-800 disabled:opacity-50"
+              onClick={signOut}
+              className="mt-6 w-full rounded-lg bg-gray-900 px-4 py-2 font-semibold text-white transition-all duration-200 hover:bg-gray-800"
             >
-              {signingOut ? 'Signing out...' : 'Sign out'}
+              Sign out
             </button>
           </>
         ) : (
@@ -96,8 +128,10 @@ export default function AuthModal({ isOpen, onClose, redirectPath = '/projects',
               </div>
             )}
 
+            {/* Provider */}
             <button
-              onClick={signInWithFacebook}
+              type="button"
+              onClick={onFacebook}
               className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition-all duration-200 hover:bg-blue-700"
             >
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -107,28 +141,26 @@ export default function AuthModal({ isOpen, onClose, redirectPath = '/projects',
             </button>
 
             <div className="my-5 flex items-center">
-              <div className="flex-grow border-t border-gray-300"></div>
+              <div className="flex-grow border-t border-gray-300" />
               <span className="mx-3 text-xs uppercase text-gray-500">or</span>
-              <div className="flex-grow border-t border-gray-300"></div>
+              <div className="flex-grow border-t border-gray-300" />
             </div>
 
             {/* Mode switch */}
             <div className="flex overflow-hidden rounded-lg border border-gray-200 text-sm">
               <button
+                type="button"
                 className={`flex-1 py-2 font-medium transition ${
-                  mode === 'login'
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                  mode === 'login' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
                 }`}
                 onClick={() => setMode('login')}
               >
                 Login
               </button>
               <button
+                type="button"
                 className={`flex-1 py-2 font-medium transition ${
-                  mode === 'register'
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                  mode === 'register' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
                 }`}
                 onClick={() => setMode('register')}
               >
@@ -136,27 +168,8 @@ export default function AuthModal({ isOpen, onClose, redirectPath = '/projects',
               </button>
             </div>
 
-            {/* Form */}
-            <form
-                className="mt-4 space-y-3"
-                onSubmit={async (e) => {
-                e.preventDefault();
-                try {
-                    if (mode === 'login') {
-                    await loginWithEmail({ email: form.email, password: form.password });
-                    } else {
-                    await registerWithEmail({
-                        email: form.email,
-                        password: form.password,
-                        name: form.name,
-                        username: form.username,
-                    });
-                    }
-
-                    onClose?.();
-                } catch (_) {}
-                }}
-            >
+            {/* Email/password form */}
+            <form className="mt-4 space-y-3" onSubmit={onSubmit}>
               {mode === 'register' && (
                 <>
                   <input
@@ -192,19 +205,9 @@ export default function AuthModal({ isOpen, onClose, redirectPath = '/projects',
                 required
               />
 
-             <button
-                onClick={async () => {
-                try {
-                    await signInWithFacebook();
-                    onClose?.();
-                } catch (_) {}
-                }}
-                className="mt-4 w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-200"
-            >
-                {/* ... */}
-            </button>
-
-
+              <button className="w-full rounded-lg bg-gray-900 px-4 py-2 font-semibold text-white transition-all duration-200 hover:bg-gray-800">
+                {mode === 'login' ? 'Login' : 'Create account'}
+              </button>
             </form>
 
             <p className="mt-4 text-center text-xs text-gray-500">

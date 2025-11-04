@@ -65,6 +65,7 @@ const projects = [
     liveUrl: '#',
     repoUrl: '#',
   },
+  
 ];
 
 function ProjectCard({ project, onClick }) {

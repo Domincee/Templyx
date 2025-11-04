@@ -12,13 +12,11 @@ import './index.css';
 export default function App() {
   return (
     <AuthProvider>
-      {/* Mount the overlay once, outside <Routes> */}
-      <PostLoginRedirectOverlay defaultTo="/projects" defaultDelay={900} />
-
+      <PostLoginRedirectOverlay defaultTo="/home" defaultDelay={1200} />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/projects" element={<Projects />} />   {/* was missing */}
+        <Route path="/projects" element={<Projects />} />
         <Route path="/about" element={<About />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="*" element={<Navigate to="/" replace />} />
