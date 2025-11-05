@@ -38,32 +38,32 @@ return (
       {/* Reactions below the card */}
       
       <div className="p-4 border-t border-gray-100">
-        <div className="flex gap-2">
+      <div className="flex gap-1 flex-nowrap justify-center">
            <div className="flex flex-col items-center">
-            <button onClick={() => onReactionToggle?.(project.id, 'cool')} className={`p-2 rounded-lg transition hover:scale-110 ${userReactions[project.id] === 'cool' ? 'bg-blue-100 border-2 border-blue-500' : 'hover:bg-gray-100'}`}>
-              <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGQweHE3MTVsa3JxNGg2Y3FzZThlcGQ1aW54MTU4N2xzanZlc3M0diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5gXYzsVBmjIsw/giphy.gif" alt="cool" className="w-12 h-12 rounded-xl" />
+            <button onClick={() => onReactionToggle?.(project.id, 'cool')} className={`p-1 rounded-lg transition hover:scale-110 ${userReactions[project.id] === 'cool' ? 'bg-blue-100 border-2 border-blue-500' : 'hover:bg-gray-100'}`}>
+              <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGQweHE3MTVsa3JxNGg2Y3FzZThlcGQ1aW54MTU4N2xzanZlc3M0diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5gXYzsVBmjIsw/giphy.gif" alt="cool" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-xl flex-shrink-0" />
         </button>
             <span className="text-xs text-gray-500 mt-1">{reactionCounts[project.id]?.cool || 0}</span>
         </div>
 
           <div className="flex flex-col items-center">
-            <button onClick={() => onReactionToggle?.(project.id, 'fire')} className={`p-2 rounded-lg transition hover:scale-110 ${userReactions[project.id] === 'fire' ? 'bg-red-100 border-2 border-red-500' : 'hover:bg-gray-100'}`}>
-          <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMTBxZjMxbTliaXR4d2UzbDEyZnNoMW9tdmFxbmUzdzZxOGE4Y2FjMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/JQhWDr0NIkZHy/giphy.gif" alt="fire" className="w-12 h-12 rounded-xl" />
+            <button onClick={() => onReactionToggle?.(project.id, 'fire')} className={`p-1 rounded-lg transition hover:scale-110 ${userReactions[project.id] === 'fire' ? 'bg-red-100 border-2 border-red-500' : 'hover:bg-gray-100'}`}>
+          <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMTBxZjMxbTliaXR4d2UzbDEyZnNoMW9tdmFxbmUzdzZxOGE4Y2FjMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/JQhWDr0NIkZHy/giphy.gif" alt="fire" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-xl flex-shrink-0" />
           </button>
             <span className="text-xs text-gray-500 mt-1">{reactionCounts[project.id]?.fire || 0}</span>
         </div>
 
         <div className="flex flex-col items-center">
-            <button onClick={() => onReactionToggle?.(project.id, 'nice')} className={`p-2 rounded-lg transition hover:scale-110 ${userReactions[project.id] === 'nice' ? 'bg-green-100 border-2 border-green-500' : 'hover:bg-gray-100'}`}>
-              <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3UzNXFtczhnOW1meGM1M3dyM3p2MmQ1OWtxaTN0eGp3YmhqbGwwbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/yJFeycRK2DB4c/giphy.gif" alt="nice" className="w-12 h-12 rounded-xl" />
+            <button onClick={() => onReactionToggle?.(project.id, 'nice')} className={`p-1 rounded-lg transition hover:scale-110 ${userReactions[project.id] === 'nice' ? 'bg-green-100 border-2 border-green-500' : 'hover:bg-gray-100'}`}>
+              <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3UzNXFtczhnOW1meGM1M3dyM3p2MmQ1OWtxaTN0eGp3YmhqbGwwbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/yJFeycRK2DB4c/giphy.gif" alt="nice" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-xl flex-shrink-0" />
             </button>
             <span className="text-xs text-gray-500 mt-1">{reactionCounts[project.id]?.nice || 0}</span>
           </div>
         </div>
 
         <div className="flex flex-col items-center">
-          <button onClick={() => onReactionToggle?.(project.id, 'wow')} className={`p-2 rounded-lg transition hover:scale-110 ${userReactions[project.id] === 'wow' ? 'bg-purple-100 border-2 border-purple-500' : 'hover:bg-gray-100'}`}>
-            <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExZGQ1cTRqM2ptZjR0MGswbXFtejhxbnRncjhtZDc3bm5ibmp5aXp5NCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Um3ljJl8jrnHy/giphy.gif" alt="wow" className="w-12 h-12 rounded-xl" />
+          <button onClick={() => onReactionToggle?.(project.id, 'wow')} className={`p-1 rounded-lg transition hover:scale-110 ${userReactions[project.id] === 'wow' ? 'bg-purple-100 border-2 border-purple-500' : 'hover:bg-gray-100'}`}>
+            <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExZGQ1cTRqM2ptZjR0MGswbXFtejhxbnRncjhtZDc3bm5ibmp5aXp5NCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Um3ljJl8jrnHy/giphy.gif" alt="wow" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-xl flex-shrink-0" />
           </button>
           <span className="text-xs text-gray-500 mt-1">{reactionCounts[project.id]?.wow || 0}</span>
         </div>
