@@ -451,15 +451,19 @@ export default function Profile() {
                             <section className="mt-8 animate-bounce-in" style={{ animationDelay: '0.7s' }}>
                                 <h2 className="text-xl font-semibold text-black mb-4">Reactions Received</h2>
                                 <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                                    <div className="text-center mb-4">Debug: Section is rendering</div>
                                     <div className="flex gap-4 justify-center">
                                         {(() => {
                                             const totals = getTotalReactions();
                                             console.log('Reaction totals:', totals); // Debug log
-                                            return [
+                                            console.log('Rendering reactions array'); // Debug log
+                                            const reactionsArray = [
                                                 { type: 'cool', count: totals.cool, src: 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGQweHE3MTVsa3JxNGg2Y3FzZThlcGQ1aW54MTU4N2xzanZlc3M0diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5gXYzsVBmjIsw/giphy.gif' },
                                                 { type: 'fire', count: totals.fire, src: 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMTBxZjMxbTliaXR4d2UzbDEyZnNoMW9tdmFxbmUzdzZxOGE4Y2FjMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/JQhWDr0NIkZHy/giphy.gif' },
                                                 { type: 'nice', count: totals.nice, src: 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3UzNXFtczhnOW1meGM1M3dyM3p2MmQ1OWtxaTN0eGp3YmhqbGwwbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/yJFeycRK2DB4c/giphy.gif' }
-                                            ].map(r => (
+                                            ];
+                                            console.log('Reactions array:', reactionsArray); // Debug log
+                                            return reactionsArray.map(r => (
                                                 <div key={r.type} className="flex flex-col items-center">
                                                     <img src={r.src} alt={r.type} className="w-8 h-8 rounded-lg" />
                                                     <span className="text-sm font-semibold text-gray-700 mt-2">{r.count}</span>
