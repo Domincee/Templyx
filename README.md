@@ -28,28 +28,50 @@ This is a **personal portfolio template** that allows users to:
 ## ✨ Features
 
 - 🎨 **Modern Design**: Clean, responsive UI with smooth animations
-- 📱 **Mobile-First**: Optimized for all device sizes
-- 🔐 **Authentication**: Secure user authentication with Supabase
+- 📱 **Fully Responsive**: Optimized for desktop, tablet, and mobile devices
+- 🔐 **Social Authentication**: Sign up/login with Facebook and Google only
 - 📊 **Project Management**: Create, edit, and showcase projects
 - ❤️ **Social Reactions**: Users can react to projects (cool, fire, nice, wow)
-- 🏷️ **Category Filtering**: Browse projects by categories
-- 👤 **User Profiles**: Personalized profiles with project portfolios
-- 💬 **Real-time Updates**: Live data synchronization
+- 🏷️ **Category Filtering**: Browse projects by categories (Portfolio, UI, Ecommerce, etc.)
+- 👤 **User Profiles**: Personalized profiles with project portfolios and reaction stats
+- 💬 **Real-time Updates**: Live data synchronization across the app
 
 ## 🎮 How to Use
 
-1. **Sign Up**: Create an account to start building your portfolio
-2. **Add Projects**: Share your work with descriptions and media
-3. **Connect**: Explore other developers' projects and give reactions
-4. **Customize**: Make it your own with personal branding
+1. **Sign Up**: Create an account using Facebook or Google authentication
+2. **Complete Profile**: Set up your username and profile information
+3. **Add Projects**: Share your work with descriptions, media, and categories
+4. **Connect**: Explore other developers' projects and give reactions
+5. **Manage**: Edit your projects and view your portfolio stats
 
 ## 🌟 Community Guidelines
 
 This platform is built for:
 - Sharing creative work and learning experiences
-- Providing constructive feedback and encouragement
+- Providing constructive feedback through reactions
 - Building connections within the developer community
-- Celebrating creativity and innovation
+- Celebrating creativity and innovation in tech
+
+## 📂 Project Categories
+
+Browse projects by these categories:
+- **Portfolio**: Personal portfolio websites
+- **UI**: User interface designs and components
+- **Ecommerce**: Online shopping platforms
+- **Dashboard**: Admin and analytics dashboards
+- **Blog**: Content management and blogging platforms
+- **Landing**: Marketing and landing pages
+- **Hobby**: Personal and fun projects
+- **Personal**: Individual creative projects
+
+## 🔧 Project Features
+
+Each project can include:
+- **Rich Media**: Images, descriptions, and links
+- **Categorization**: Organized by project type
+- **Social Engagement**: Reactions from the community
+- **Live Demos**: Direct links to working applications
+- **GitHub Integration**: Source code repositories
 
 ## 📝 License
 
