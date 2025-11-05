@@ -92,7 +92,6 @@ function ProjectCard({ project, onClick, reactionCounts, navigate }) {
 
 export default function Home() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [authOpen, setAuthOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
   const [selected, setSelected] = useState(null);
