@@ -72,6 +72,7 @@ return (
   );
 }
 
+// Updated to include wow reaction support
 export default function Projects() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -144,26 +145,52 @@ export default function Projects() {
   };
 
   const toggleReaction = async (projectId, type) => {
-    if (!user) {
-      setAuthOpen(true);
-      return;
-    }
-    try {
-      const current = userReactions[projectId];
-      if (current === type) {
-        // Remove
-        await supabase.from('project_reactions').delete().eq('project_id', projectId).eq('user_id', user.id).eq('reaction_type', type);
-        setUserReactions(prev => ({ ...prev, [projectId]: null }));
-      } else {
-        // Switch: first remove old if any, then insert new
-        if (current) {
-          await supabase.from('project_reactions').delete().eq('project_id', projectId).eq('user_id', user.id).eq('reaction_type', current);
+  if (!user) {
+  setAuthOpen(true);
+  return;
+  }
+  try {
+  const current = userReactions[projectId];
+  if (current === type) {
+  // Remove
+  const { error: deleteError } = await supabase.from('project_reactions').delete().eq('project_id', projectId).eq('user_id', user.id).eq('reaction_type', type);
+  if (deleteError) {
+      console.error('Error deleting reaction:', deleteError);
+    return;
+  }
+  setUserReactions(prev => ({ ...prev, [projectId]: null }));
+  } else {
+  // Switch: first remove old if any, then insert new
+  if (current) {
+  const { error: deleteError } = await supabase.from('project_reactions').delete().eq('project_id', projectId).eq('user_id', user.id).eq('reaction_type', current);
+  if (deleteError) {
+      console.error('Error deleting old reaction:', deleteError);
+       return;
+          }
+  }
+  const { error: insertError } = await supabase.from('project_reactions').insert({
+  project_id: projectId,
+  user_id: user.id,
+  reaction_type: type
+  });
+        if (insertError) {
+    console.error('Error inserting reaction:', insertError);
+  // If constraint violation, try to upsert instead
+  if (insertError.code === '23505' || insertError.message?.includes('duplicate') || insertError.message?.includes('constraint')) {
+  console.log('Attempting upsert for reaction...');
+  const { error: upsertError } = await supabase.from('project_reactions').upsert({
+    project_id: projectId,
+      user_id: user.id,
+        reaction_type: type
+        }, { onConflict: 'project_id,user_id' });
+        if (upsertError) {
+          console.error('Upsert also failed:', upsertError);
+           return;
+         }
+        } else {
+            return;
+          }
         }
-        await supabase.from('project_reactions').insert({
-          project_id: projectId,
-          user_id: user.id,
-          reaction_type: type
-        });
         setUserReactions(prev => ({ ...prev, [projectId]: type }));
 
         // Insert notification for project owner
