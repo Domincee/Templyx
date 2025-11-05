@@ -8,6 +8,7 @@ export default function Navbar({ onLoginClick }) {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const username =
     user?.user_metadata?.username ??
@@ -93,16 +94,21 @@ export default function Navbar({ onLoginClick }) {
     localStorage.removeItem(`readNotifications_${user.id}`);
   };
 
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
   return (
     <nav className="sticky top-0 z-40 bg-white/70 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-        <Link to="/" className="text-lg font-bold">
+        <Link to="/" className="text-lg font-bold" onClick={closeMenu}>
           <span className="bg-gradient-to-r from-indigo-600 to-pink-500 bg-clip-text text-transparent">
             Templyx
           </span>
         </Link>
 
-        <div className="flex items-center gap-6">
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex items-center gap-6">
           <NavLink
             to="/home"
             className={({ isActive }) =>
@@ -133,8 +139,8 @@ export default function Navbar({ onLoginClick }) {
           {user && (
             <div className="relative">
               <button
-              onClick={toggleNotifications}
-              className={`relative p-2 text-black hover:text-gray-600 hover:scale-110 transition-all duration-200 cursor-pointer ${notifications.filter(n => !n.is_read).length > 0 ? 'animate-bounce' : ''}`}
+                onClick={toggleNotifications}
+                className={`relative p-2 text-black hover:text-gray-600 hover:scale-110 transition-all duration-200 cursor-pointer ${notifications.filter(n => !n.is_read).length > 0 ? 'animate-bounce' : ''}`}
               >
                 🔔
                 {notifications.filter(n => !n.is_read).length > 0 && (
@@ -179,6 +185,109 @@ export default function Navbar({ onLoginClick }) {
           >
             {label}
           </button>
+        </div>
+
+        {/* Mobile Hamburger Menu */}
+        <div className="md:hidden flex items-center gap-4">
+          {user && (
+            <div className="relative">
+              <button
+                onClick={toggleNotifications}
+                className={`relative p-2 text-black hover:text-gray-600 hover:scale-110 transition-all duration-200 cursor-pointer ${notifications.filter(n => !n.is_read).length > 0 ? 'animate-bounce' : ''}`}
+              >
+                🔔
+                {notifications.filter(n => !n.is_read).length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {notifications.filter(n => !n.is_read).length}
+                  </span>
+                )}
+              </button>
+              {showNotifications && (
+                <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                  <div className="p-4">
+                    <h3 className="text-sm font-semibold mb-2">Notifications</h3>
+                    {notifications.length === 0 ? (
+                      <p className="text-sm text-gray-500">No notifications</p>
+                    ) : (
+                      <>
+                        <ul className="space-y-2">
+                          {notifications.map(notif => (
+                            <li key={notif.id} className={`text-sm p-2 rounded ${notif.is_read ? 'bg-gray-100 text-gray-500' : 'bg-blue-50 text-black'}`}>
+                              {notif.message}
+                            </li>
+                          ))}
+                        </ul>
+                        <button
+                          onClick={clearAllNotifications}
+                          className="mt-4 w-full text-sm text-red-600 hover:text-red-800 underline"
+                        >
+                          🗑️ Clear All
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Hamburger Button */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="p-2 text-black hover:text-gray-600 transition-colors duration-200"
+            aria-label="Toggle menu"
+          >
+            <div className="w-6 h-6 flex flex-col justify-center items-center">
+              <span className={`block w-5 h-0.5 bg-current transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-1' : '-translate-y-1'}`}></span>
+              <span className={`block w-5 h-0.5 bg-current transition-all duration-300 ${isMenuOpen ? 'opacity-0' : 'opacity-100'}`}></span>
+              <span className={`block w-5 h-0.5 bg-current transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-1' : 'translate-y-1'}`}></span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      <div className={`md:hidden bg-white/95 backdrop-blur border-t border-gray-200 transition-all duration-300 ${isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+        <div className="px-4 py-4 space-y-3">
+          <NavLink
+            to="/home"
+            onClick={closeMenu}
+            className={({ isActive }) =>
+              `block text-sm px-3 py-2 rounded-lg transition-all duration-300 ease-in-out ${isActive ? 'bg-black text-white' : 'text-black hover:bg-black hover:text-white'}`
+            }
+          >
+            Home
+          </NavLink>
+
+          <NavLink
+            to="/projects"
+            onClick={closeMenu}
+            className={({ isActive }) =>
+              `block text-sm px-3 py-2 rounded-lg transition-all duration-300 ease-in-out ${isActive ? 'bg-black text-white' : 'text-black hover:bg-black hover:text-white'}`
+            }
+          >
+            Projects
+          </NavLink>
+
+          <NavLink
+            to="/about"
+            onClick={closeMenu}
+            className={({ isActive }) =>
+              `block text-sm px-3 py-2 rounded-lg transition-all duration-300 ease-in-out ${isActive ? 'bg-black text-white' : 'text-black hover:bg-black hover:text-white'}`
+            }
+          >
+            About
+          </NavLink>
+
+          <div className="pt-3 border-t border-gray-200">
+            <button
+              onClick={() => { handleRightButton(); closeMenu(); }}
+              className="w-full text-left max-w-[160px] truncate rounded-lg bg-gray-900 px-3 py-2 text-sm font-semibold text-white hover:bg-gray-800"
+              title={label}
+            >
+              {label}
+            </button>
+          </div>
         </div>
       </div>
     </nav>
