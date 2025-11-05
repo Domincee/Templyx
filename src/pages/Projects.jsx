@@ -67,7 +67,7 @@ return (
           </button>
           <span className="text-xs text-gray-500 mt-1">{reactionCounts[project.id]?.wow || 0}</span>
         </div>
-
+      </div>
     </div>
   );
 }
