@@ -145,6 +145,22 @@ export default function Projects() {
           reaction_type: type
         });
         setUserReactions(prev => ({ ...prev, [projectId]: type }));
+
+        // Insert notification for project owner
+        const { data: project } = await supabase
+          .from('projects')
+          .select('owner_id, title')
+          .eq('id', projectId)
+          .single();
+
+        if (project && project.owner_id !== user.id) {
+          await supabase.from('notifications').insert({
+            user_id: project.owner_id,
+            type: 'reaction',
+            message: `${user.user_metadata?.full_name || user.email} reacted with ${type} to your project "${project.title}"`,
+            related_id: projectId
+          });
+        }
       }
       // Update counts
       fetchReactionCounts(projects.map(p => p.id));
