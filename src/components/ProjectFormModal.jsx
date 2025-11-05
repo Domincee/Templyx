@@ -369,16 +369,16 @@ export default function ProjectFormModal({
           </div>
         )}
 
-        <form className="pb-6" onSubmit={submit}>
+        <form className="p-4 sm:p-6 pb-6" onSubmit={submit}>
           {/* Parent Container: Responsive grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-6">
             {/* Left Container: Full width on mobile, 3/5 on large screens */}
             <div className="lg:col-span-3 space-y-4">
               {/* Project Title */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Project Title</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Project Title</label>
                 <input
-                  className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                  className={`w-full rounded-lg border px-3 py-2 sm:py-2.5 text-sm outline-none focus:ring-2 ${
                     titleOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
                   }`}
                   placeholder="Project title (max 25 chars)"
@@ -395,13 +395,13 @@ export default function ProjectFormModal({
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea
-                  className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                  className={`w-full rounded-lg border px-3 py-2 sm:py-2.5 text-sm outline-none focus:ring-2 ${
                     descOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
                   }`}
                   placeholder="Short description (min 25 chars)"
-                  rows={4}
+                  rows={3}
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                   onBlur={() => touch('description')}
@@ -415,9 +415,9 @@ export default function ProjectFormModal({
               {/* Tools & Category (responsive flex row) */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tools</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Tools</label>
                   <input
-                    className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                    className={`w-full rounded-lg border px-3 py-2 sm:py-2.5 text-sm outline-none focus:ring-2 ${
                       toolsOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
                     }`}
                     placeholder="Tools (comma separated)"
@@ -431,9 +431,9 @@ export default function ProjectFormModal({
                   </p>
                 </div>
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Category</label>
                   <select
-                    className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                    className={`w-full rounded-lg border px-3 py-2 sm:py-2.5 text-sm outline-none focus:ring-2 ${
                       categoryOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
                     }`}
                     value={form.category}
@@ -460,9 +460,9 @@ export default function ProjectFormModal({
               {/* Live Preview & GitHub (responsive flex row) */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Live Preview URL</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Live Preview URL</label>
                   <input
-                    className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                    className={`w-full rounded-lg border px-3 py-2 sm:py-2.5 text-sm outline-none focus:ring-2 ${
                       liveOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
                     }`}
                     placeholder="Live preview URL (https://...)"
@@ -476,9 +476,9 @@ export default function ProjectFormModal({
                   </p>
                 </div>
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">GitHub Repository URL</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">GitHub Repository URL</label>
                   <input
-                    className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                    className={`w-full rounded-lg border px-3 py-2 sm:py-2.5 text-sm outline-none focus:ring-2 ${
                       repoOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
                     }`}
                     placeholder="GitHub repository URL (https://github.com/owner/repo)"
@@ -498,7 +498,7 @@ export default function ProjectFormModal({
             <div className="lg:col-span-2 flex flex-col gap-4">
               {/* Image Drag & Drop / Preview */}
               <div className="min-h-48">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Project Image</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Project Image</label>
                 <div
                   onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
                   onDragLeave={() => setDragActive(false)}
@@ -508,8 +508,8 @@ export default function ProjectFormModal({
                   {form.imageUrl ? (
                     <div className="grid place-items-center">
                       <img src={form.imageUrl} alt="Uploaded preview" className="max-w-full max-h-24 object-contain rounded" />
-                      <p className="mt-2 text-sm text-gray-600">Image uploaded. Drag to replace or</p>
-                      <label className="mt-1 inline-block cursor-pointer rounded-md border border-gray-300 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                      <p className="mt-2 text-xs sm:text-sm text-gray-600">Image uploaded. Drag to replace or</p>
+                      <label className="mt-1 inline-block cursor-pointer rounded-md border border-gray-300 px-3 py-1 text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50">
                         Browse new
                         <input
                           type="file"
@@ -522,8 +522,8 @@ export default function ProjectFormModal({
                     </div>
                   ) : (
                     <div className="grid place-items-center">
-                      <p className="text-sm text-gray-700">Drag & drop an image here, or</p>
-                      <label className="mt-2 inline-block cursor-pointer rounded-md border border-gray-300 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                      <p className="text-xs sm:text-sm text-gray-700">Drag & drop an image here, or</p>
+                      <label className="mt-2 inline-block cursor-pointer rounded-md border border-gray-300 px-3 py-1 text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50">
                         Browse
                         <input
                           type="file"
@@ -540,9 +540,9 @@ export default function ProjectFormModal({
 
               {/* Project URL Input - at bottom */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Image URL</label>
                 <input
-                  className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                  className={`w-full rounded-lg border px-3 py-2 sm:py-2.5 text-sm outline-none focus:ring-2 ${
                     imageOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
                   }`}
                   placeholder="Image URL"
@@ -571,7 +571,7 @@ export default function ProjectFormModal({
 
           {/* Bottom Section: Full width */}
           <div className="mt-6 flex flex-col items-center gap-4">
-            <label className="flex items-center gap-2 text-sm text-gray-700">
+            <label className="flex items-center gap-2 text-xs sm:text-sm text-gray-700">
               <input
                 type="checkbox"
                 checked={form.published}
@@ -585,14 +585,14 @@ export default function ProjectFormModal({
                 <button
                   type="button"
                   onClick={doDelete}
-                  className="rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 hover:transform hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+                  className="rounded-lg border border-red-300 px-4 py-2 text-xs sm:text-sm font-semibold text-red-700 hover:bg-red-50 hover:transform hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
                 >
                   Delete
                 </button>
               ) : null}
               <button
                 disabled={!allValid || saving || uploading}
-                className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 hover:transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-60 cursor-pointer"
+                className="rounded-lg bg-gray-900 px-4 py-2 text-xs sm:text-sm font-semibold text-white hover:bg-gray-800 hover:transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-60 cursor-pointer"
               >
                 {saving ? (isEdit ? 'Saving…' : 'Publishing…') : (isEdit ? 'Save changes' : 'Publish')}
               </button>
