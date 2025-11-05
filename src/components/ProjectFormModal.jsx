@@ -346,7 +346,7 @@ export default function ProjectFormModal({
   return (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={handleClose}>
   <div
-  className="w-full max-w-lg rounded-2xl border border-gray-200 bg-white p-4 shadow-xl"
+  className="w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl border border-gray-200 bg-white p-4 shadow-xl"
   onClick={(e) => e.stopPropagation()}
   >
         <div className="flex items-start justify-between">
@@ -369,198 +369,235 @@ export default function ProjectFormModal({
           </div>
         )}
 
-        <form className="mt-4 space-y-4" onSubmit={submit}>
-          {/* Title */}
-          <div>
-            <input
-              className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
-                titleOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
-              }`}
-              placeholder="Project title (max 25 chars)"
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              onBlur={() => touch('title')}
-              maxLength={60}
-              required
-            />
-            {showError(titleOk, 'title') && (
-              <p className="mt-1 text-xs text-red-600">
-                {titleTooShort ? 'Title must be at least 3 characters.' : 'Max 25 characters.'}
-              </p>
-            )}
-          </div>
-
-          {/* Description */}
-          <div>
-            <textarea
-              className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
-                descOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
-              }`}
-              placeholder="Short description (min 25 chars)"
-              rows={4}
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              onBlur={() => touch('description')}
-              required
-            />
-            {showError(descOk, 'description') && (
-              <p className="mt-1 text-xs text-red-600">Description must be at least 25 characters.</p>
-            )}
-          </div>
-
-          {/* Tools */}
-          <div>
-          <input
-          className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
-          toolsOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
-          }`}
-          placeholder="Tools (comma separated, e.g. React, Tailwind, Supabase)"
-          value={form.toolsText}
-          onChange={(e) => setForm({ ...form, toolsText: e.target.value })}
-          onBlur={() => touch('toolsText')}
-          required
-          />
-          {showError(toolsOk, 'toolsText') && (
-          <p className="mt-1 text-xs text-red-600">Add at least one tool (comma separated).</p>
-          )}
-          </div>
-
-          {/* Category */}
-          <div>
-            <select
-              className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
-                categoryOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
-              }`}
-              value={form.category}
-              onChange={(e) => setForm({ ...form, category: e.target.value })}
-              onBlur={() => touch('category')}
-              required
-            >
-              <option value="">Select a category</option>
-              <option value="Portfolio">Portfolio</option>
-              <option value="UI">UI</option>
-              <option value="Ecommerce">Ecommerce</option>
-              <option value="Dashboard">Dashboard</option>
-              <option value="Blog">Blog</option>
-              <option value="Landing">Landing</option>
-            </select>
-            {showError(categoryOk, 'category') && (
-              <p className="mt-1 text-xs text-red-600">Please select a category.</p>
-            )}
-          </div>
-
-          {/* Drag & Drop Upload */}
-          <div
-            onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
-            onDragLeave={() => setDragActive(false)}
-            onDrop={handleDrop}
-            className={`relative grid place-items-center rounded-lg border-2 border-dashed p-6 text-center ${dragActive ? 'border-gray-900 bg-gray-50' : 'border-gray-300'}`}
-          >
-            <div>
-              <p className="text-sm text-gray-700">Drag & drop an image here, or</p>
-              <label className="mt-2 inline-block cursor-pointer rounded-md border border-gray-300 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                Browse
+        <form className="mt-4" onSubmit={submit}>
+          {/* Parent Container: Flex with 2 columns */}
+          <div className="grid grid-cols-5 gap-6">
+            {/* Left Container: ~60% width (3/5) */}
+            <div className="col-span-3 space-y-4">
+              {/* Project Title */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Project Title</label>
                 <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => uploadFile(e.target.files?.[0])}
+                  className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                    titleOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
+                  }`}
+                  placeholder="Project title (max 25 chars)"
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  onBlur={() => touch('title')}
+                  maxLength={60}
+                  required
                 />
-              </label>
-              {uploading && <p className="mt-2 text-xs text-gray-500">Uploading…</p>}
-            </div>
-          </div>
-
-          {/* OR paste image URL */}
-          <div>
-            <input
-              className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
-                imageOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
-              }`}
-              placeholder="Image URL (optional if you uploaded above — will auto-fill)"
-              value={form.imageUrl}
-              onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-              onBlur={() => touch('imageUrl')}
-              required
-            />
-            {/* helper state/text */}
-            {form.imageUrl && imageUrlSyntaxOk && !imageUrlOk && (
-              <p className="mt-1 text-xs text-gray-600">Checking image…</p>
-            )}
-            {showError(imageOk, 'imageUrl') && (
-              <p className="mt-1 text-xs text-red-600">
-                {!hasImage
-                  ? 'Please upload an image or paste a valid image URL.'
-                  : (!imageUrlSyntaxOk
-                      ? 'Enter a valid image URL (http/https and ends with .jpg/.png/.webp).'
-                      : 'We could not load that image URL. Make sure it is publicly accessible.')}
-              </p>
-            )}
-          </div>
-
-          {/* Links */}
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <input
-                className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
-                  liveOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
-                }`}
-                placeholder="Live preview URL (https://...)"
-                value={form.liveUrl}
-                onChange={(e) => setForm({ ...form, liveUrl: e.target.value })}
-                onBlur={() => touch('liveUrl')}
-                required
-              />
-              {showError(liveOk, 'liveUrl') && (
-                <p className="mt-1 text-xs text-red-600">Enter a valid URL starting with http:// or https://</p>
-              )}
-            </div>
-            <div>
-              <input
-                className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
-                  repoOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
-                }`}
-                placeholder="GitHub repository URL (https://github.com/owner/repo)"
-                value={form.repoUrl}
-                onChange={(e) => setForm({ ...form, repoUrl: e.target.value })}
-                onBlur={() => touch('repoUrl')}
-                required
-              />
-              {showError(repoOk, 'repoUrl') && (
-                <p className="mt-1 text-xs text-red-600">
-                  GitHub URL must be in the form: https://github.com/owner/repo
+                <p className="mt-1 text-xs text-red-600 min-h-[1.25rem]">
+                  {showError(titleOk, 'title') ? (titleTooShort ? 'Title must be at least 3 characters.' : 'Max 25 characters.') : ''}
                 </p>
-              )}
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea
+                  className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                    descOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
+                  }`}
+                  placeholder="Short description (min 25 chars)"
+                  rows={4}
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  onBlur={() => touch('description')}
+                  required
+                />
+                <p className="mt-1 text-xs text-red-600 min-h-[1.25rem]">
+                  {showError(descOk, 'description') ? 'Description must be at least 25 characters.' : ''}
+                </p>
+              </div>
+
+              {/* Tools & Category (flex row) */}
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tools</label>
+                  <input
+                    className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                      toolsOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
+                    }`}
+                    placeholder="Tools (comma separated)"
+                    value={form.toolsText}
+                    onChange={(e) => setForm({ ...form, toolsText: e.target.value })}
+                    onBlur={() => touch('toolsText')}
+                    required
+                  />
+                  <p className="mt-1 text-xs text-red-600 min-h-[1.25rem]">
+                    {showError(toolsOk, 'toolsText') ? 'Add at least one tool (comma separated).' : ''}
+                  </p>
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                  <select
+                    className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                      categoryOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
+                    }`}
+                    value={form.category}
+                    onChange={(e) => setForm({ ...form, category: e.target.value })}
+                    onBlur={() => touch('category')}
+                    required
+                  >
+                    <option value="">Select a category</option>
+                    <option value="Portfolio">Portfolio</option>
+                    <option value="UI">UI</option>
+                    <option value="Ecommerce">Ecommerce</option>
+                    <option value="Dashboard">Dashboard</option>
+                    <option value="Blog">Blog</option>
+                    <option value="Landing">Landing</option>
+                  </select>
+                  <p className="mt-1 text-xs text-red-600 min-h-[1.25rem]">
+                    {showError(categoryOk, 'category') ? 'Please select a category.' : ''}
+                  </p>
+                </div>
+              </div>
+
+              {/* Live Preview & GitHub (flex row) */}
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Live Preview URL</label>
+                  <input
+                    className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                      liveOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
+                    }`}
+                    placeholder="Live preview URL (https://...)"
+                    value={form.liveUrl}
+                    onChange={(e) => setForm({ ...form, liveUrl: e.target.value })}
+                    onBlur={() => touch('liveUrl')}
+                    required
+                  />
+                  <p className="mt-1 text-xs text-red-600 min-h-[1.25rem]">
+                    {showError(liveOk, 'liveUrl') ? 'Enter a valid URL starting with http:// or https://' : ''}
+                  </p>
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">GitHub Repository URL</label>
+                  <input
+                    className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                      repoOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
+                    }`}
+                    placeholder="GitHub repository URL (https://github.com/owner/repo)"
+                    value={form.repoUrl}
+                    onChange={(e) => setForm({ ...form, repoUrl: e.target.value })}
+                    onBlur={() => touch('repoUrl')}
+                    required
+                  />
+                  <p className="mt-1 text-xs text-red-600 min-h-[1.25rem]">
+                    {showError(repoOk, 'repoUrl') ? 'GitHub URL must be in the form: https://github.com/owner/repo' : ''}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Container: ~40% width (2/5) */}
+            <div className="col-span-2 flex flex-col gap-4">
+              {/* Image Drag & Drop / Preview */}
+              <div className="min-h-48">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Project Image</label>
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+                  onDragLeave={() => setDragActive(false)}
+                  onDrop={handleDrop}
+                  className={`relative rounded-lg border-2 border-dashed p-4 text-center ${dragActive ? 'border-gray-900 bg-gray-50' : 'border-gray-300'} ${form.imageUrl ? 'border-solid' : ''}`}
+                >
+                  {form.imageUrl ? (
+                    <div className="grid place-items-center">
+                      <img src={form.imageUrl} alt="Uploaded preview" className="max-w-full max-h-24 object-contain rounded" />
+                      <p className="mt-2 text-sm text-gray-600">Image uploaded. Drag to replace or</p>
+                      <label className="mt-1 inline-block cursor-pointer rounded-md border border-gray-300 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                        Browse new
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => uploadFile(e.target.files?.[0])}
+                        />
+                      </label>
+                      {uploading && <p className="mt-2 text-xs text-gray-500">Uploading…</p>}
+                    </div>
+                  ) : (
+                    <div className="grid place-items-center">
+                      <p className="text-sm text-gray-700">Drag & drop an image here, or</p>
+                      <label className="mt-2 inline-block cursor-pointer rounded-md border border-gray-300 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                        Browse
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => uploadFile(e.target.files?.[0])}
+                        />
+                      </label>
+                      {uploading && <p className="mt-2 text-xs text-gray-500">Uploading…</p>}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Project URL Input - at bottom */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                <input
+                  className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                    imageOk ? 'border-gray-300 focus:ring-gray-900' : 'border-red-300 focus:ring-red-500'
+                  }`}
+                  placeholder="Image URL"
+                  value={form.imageUrl}
+                  onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+                  onBlur={() => touch('imageUrl')}
+                  required
+                />
+                {/* helper state/text */}
+                <p className="mt-1 text-xs min-h-[1.25rem]">
+                  {form.imageUrl && imageUrlSyntaxOk && !imageUrlOk
+                    ? <span className="text-gray-600">Checking image…</span>
+                    : showError(imageOk, 'imageUrl')
+                    ? <span className="text-red-600">
+                        {!hasImage
+                          ? 'Please upload an image or paste a valid image URL.'
+                          : (!imageUrlSyntaxOk
+                            ? 'Enter a valid image URL (http/https and ends with .jpg/.png/.webp).'
+                            : 'We could not load that image URL. Make sure it is publicly accessible.')}
+                      </span>
+                    : ''}
+                </p>
+              </div>
             </div>
           </div>
 
-          <label className="mt-2 flex items-center gap-2 text-sm text-gray-700">
-            <input
-              type="checkbox"
-              checked={form.published}
-              onChange={(e) => setForm({ ...form, published: e.target.checked })}
-            />
-            Published
-          </label>
+          {/* Bottom Section: Spanning Both Columns */}
+          <div className="mt-6 flex flex-col items-center gap-4">
+            <label className="flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                checked={form.published}
+                onChange={(e) => setForm({ ...form, published: e.target.checked })}
+              />
+              Published
+            </label>
 
-          <div className="mt-4 flex items-center justify-between gap-3">
-            {isEdit ? (
+            <div className="flex flex-col items-center gap-3">
+              {isEdit ? (
+                <button
+                  type="button"
+                  onClick={doDelete}
+                  className="rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50"
+                >
+                  Delete
+                </button>
+              ) : null}
               <button
-                type="button"
-                onClick={doDelete}
-                className="rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50"
+                disabled={!allValid || saving || uploading}
+                className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-60"
               >
-                Delete
+                {saving ? (isEdit ? 'Saving…' : 'Publishing…') : (isEdit ? 'Save changes' : 'Publish')}
               </button>
-            ) : <div />}
-
-            <button
-              disabled={!allValid || saving || uploading}
-              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-60"
-            >
-              {saving ? (isEdit ? 'Saving…' : 'Publishing…') : (isEdit ? 'Save changes' : 'Publish')}
-            </button>
+            </div>
           </div>
+
+
         </form>
       </div>
     </div>
