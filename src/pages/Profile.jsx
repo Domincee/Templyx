@@ -204,12 +204,13 @@ export default function Profile() {
       try {
         const { data: reactions } = await supabase
           .from('project_reactions')
-          .select('reaction_type')
+          .select('project_id, reaction_type')
           .in('project_id', projectIds);
 
-        const counts = { cool: 0, fire: 0, nice: 0 };
+        const counts = {};
         reactions?.forEach(r => {
-          counts[r.reaction_type]++;
+          if (!counts[r.project_id]) counts[r.project_id] = { cool: 0, fire: 0, nice: 0, wow: 0 };
+          counts[r.project_id][r.reaction_type]++;
         });
         setReactionCounts(counts);
       } catch (error) {
@@ -465,11 +466,39 @@ export default function Profile() {
                                                 )}
                                             </div>
                                             <div className="p-4">
-                                                <h3 className="text-base font-semibold text-black">{proj.title}</h3>
-                                                <p className="mt-1 text-sm text-gray-800">{proj.description}</p>
+                                            <h3 className="text-base font-semibold text-black">{proj.title}</h3>
+                                            <p className="mt-1 text-sm text-gray-800">{proj.description}</p>
 
-                                                {isOwnProfile && (
-                                                <div className="mt-3 flex items-center justify-between">
+                                            {/* Reaction counts */}
+                                            <div className="mt-3 flex gap-2 justify-center">
+                                                   {reactionCounts[proj.id]?.cool > 0 && (
+                                                     <div className="flex flex-col items-center">
+                                                       <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGQweHE3MTVsa3JxNGg2Y3FzZThlcGQ1aW54MTU4N2xzanZlc3M0diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5gXYzsVBmjIsw/giphy.gif" alt="cool" className="w-6 h-6 rounded-lg" />
+                                                       <span className="text-xs text-gray-500 mt-1">{reactionCounts[proj.id]?.cool}</span>
+                                                     </div>
+                                                   )}
+                                                   {reactionCounts[proj.id]?.fire > 0 && (
+                                                     <div className="flex flex-col items-center">
+                                                       <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMTBxZjMxbTliaXR4d2UzbDEyZnNoMW9tdmFxbmUzdzZxOGE4Y2FjMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/JQhWDr0NIkZHy/giphy.gif" alt="fire" className="w-6 h-6 rounded-lg" />
+                                                       <span className="text-xs text-gray-500 mt-1">{reactionCounts[proj.id]?.fire}</span>
+                                                     </div>
+                                                   )}
+                                                   {reactionCounts[proj.id]?.nice > 0 && (
+                                                     <div className="flex flex-col items-center">
+                                                       <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3UzNXFtczhnOW1meGM1M3dyM3p2MmQ1OWtxaTN0eGp3YmhqbGwwbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/yJFeycRK2DB4c/giphy.gif" alt="nice" className="w-6 h-6 rounded-lg" />
+                                                       <span className="text-xs text-gray-500 mt-1">{reactionCounts[proj.id]?.nice}</span>
+                                                     </div>
+                                                   )}
+                                                   {reactionCounts[proj.id]?.wow > 0 && (
+                                                     <div className="flex flex-col items-center">
+                                                       <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExZGQ1cTRqM2ptZjR0MGswbXFtejhxbnRncjhtZDc3bm5ibmp5aXp5NCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Um3ljJl8jrnHy/giphy.gif" alt="wow" className="w-6 h-6 rounded-lg" />
+                                                       <span className="text-xs text-gray-500 mt-1">{reactionCounts[proj.id]?.wow}</span>
+                                                     </div>
+                                                   )}
+                                                 </div>
+
+                                                 {isOwnProfile && (
+                                                 <div className="mt-4 flex items-center justify-between">
                                                 <button
                                                 onClick={() => openEdit(proj)}
                                                     className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all duration-200 cursor-pointer"
