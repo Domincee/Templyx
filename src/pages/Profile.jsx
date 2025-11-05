@@ -244,7 +244,6 @@ export default function Profile() {
 
     // Calculate total reactions across all projects
     const getTotalReactions = () => {
-        console.log('reactionCounts state:', reactionCounts); // Debug log
         const totals = { cool: 0, fire: 0, nice: 0, wow: 0 };
         Object.values(reactionCounts).forEach(projectReactions => {
             totals.cool += projectReactions.cool || 0;
@@ -451,12 +450,9 @@ export default function Profile() {
                             <section className="mt-8 animate-bounce-in" style={{ animationDelay: '0.7s' }}>
                                 <h2 className="text-xl font-semibold text-black mb-4">Reactions Received</h2>
                                 <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                                    <div className="text-center mb-4">Debug: Section is rendering</div>
                                     <div className="flex gap-4 justify-center">
                                         {(() => {
                                             const totals = getTotalReactions();
-                                            console.log('Reaction totals:', totals); // Debug log
-                                            console.log('Rendering reactions array'); // Debug log
                                             const reactionsArray = [
                                             { type: 'cool', count: totals.cool, src: 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGQweHE3MTVsa3JxNGg2Y3FzZThlcGQ1aW54MTU4N2xzanZlc3M0diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5gXYzsVBmjIsw/giphy.gif' },
                                             { type: 'fire', count: totals.fire, src: 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMTBxZjMxbTliaXR4d2UzbDEyZnNoMW9tdmFxbmUzdzZxOGE4Y2FjMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/JQhWDr0NIkZHy/giphy.gif' },
