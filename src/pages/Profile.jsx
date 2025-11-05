@@ -459,7 +459,6 @@ export default function Profile() {
                                             { type: 'nice', count: totals.nice, src: 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3UzNXFtczhnOW1meGM1M3dyM3p2MmQ1OWtxaTN0eGp3YmhqbGwwbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/yJFeycRK2DB4c/giphy.gif' },
                                                 { type: 'wow', count: totals.wow, src: 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExZGQ1cTRqM2ptZjR0MGswbXFtejhxbnRncjhtZDc3bm5ibmp5aXp5NCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Um3ljJl8jrnHy/giphy.gif' }
                                             ];
-                                            console.log('Reactions array:', reactionsArray); // Debug log
                                             return reactionsArray.map(r => (
                                                 <div key={r.type} className="flex flex-col items-center">
                                                     <img src={r.src} alt={r.type} className="w-8 h-8 rounded-lg" />
