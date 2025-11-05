@@ -6,69 +6,70 @@ import ProjectModal from '../components/ProjectModal';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 
-function ProjectCard({ project, onClick, onReactionToggle, reactionCounts, userReactions, navigate }) {
+function ProjectCard({ project, onClick }) {
 return (
 <div className="w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
 <button
-  onClick={onClick}
-    className="w-full text-left group"
+onClick={onClick}
+className="w-full text-left group"
 >
 <div className="h-40 w-full bg-gray-100">
 {project.image_url ? (
-    <img src={project.image_url} alt={project.title} className="h-full w-full object-cover" />
+<img src={project.image_url} alt={project.title} className="h-full w-full object-cover" />
 ) : (
 <div className="flex h-full items-center justify-center bg-gradient-to-br from-indigo-500 to-pink-500 text-white">
-    <span className="text-lg font-semibold">{project.title?.[0]?.toUpperCase()}</span>
-    </div>
-    )}
-  </div>
+<span className="text-lg font-semibold">{project.title?.[0]?.toUpperCase()}</span>
+</div>
+)}
+</div>
 <div className="p-4">
-  <h3 className="text-base font-semibold text-gray-900">{project.title}</h3>
-    <p className="mt-1 line-clamp-2 text-sm text-gray-600">{project.description}</p>
-      <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
-      <img
-      src={project.owner?.avatar_url || 'https://via.placeholder.com/16'}
-      alt={project.owner?.username}
-      className="w-4 h-4 rounded-full object-cover"
-      />
-      <span>{project.owner?.full_name || project.owner?.username || 'Anonymous'}</span>
-      </div>
-      </div>
-      </button>
-      {/* Reactions below the card */}
-      
-      <div className="p-4 border-t border-gray-100">
-      <div className="flex gap-1 flex-nowrap justify-center">
-           <div className="flex flex-col items-center">
-            <button onClick={() => onReactionToggle?.(project.id, 'cool')} className={`p-1 rounded-lg transition hover:scale-110 ${userReactions[project.id] === 'cool' ? 'bg-blue-100 border-2 border-blue-500' : 'hover:bg-gray-100'}`}>
-              <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGQweHE3MTVsa3JxNGg2Y3FzZThlcGQ1aW54MTU4N2xzanZlc3M0diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5gXYzsVBmjIsw/giphy.gif" alt="cool" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-xl flex-shrink-0" />
+<h3 className="text-base font-semibold text-gray-900">{project.title}</h3>
+<p className="mt-1 line-clamp-2 text-sm text-gray-600">{project.description}</p>
+<div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
+<img
+src={project.owner?.avatar_url || 'https://via.placeholder.com/16'}
+alt={project.owner?.username}
+className="w-4 h-4 rounded-full object-cover"
+/>
+<span>{project.owner?.full_name || project.owner?.username || 'Anonymous'}</span>
+</div>
+</div>
+</button>
+</div>
+);
+}
+
+function ProjectReactions({ project, onReactionToggle, reactionCounts, userReactions }) {
+return (
+<div className="mt-2 flex gap-1 justify-center">
+<div className="flex flex-col items-center">
+<button onClick={() => onReactionToggle?.(project.id, 'cool')} className={`p-1 rounded-lg transition hover:scale-110 ${userReactions[project.id] === 'cool' ? 'bg-blue-100 border-2 border-blue-500' : 'hover:bg-gray-100'}`}>
+  <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGQweHE3MTVsa3JxNGg2Y3FzZThlcGQ1aW54MTU4N2xzanZlc3M0diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5gXYzsVBmjIsw/giphy.gif" alt="cool" className="w-6 h-6 rounded-lg" />
         </button>
-            <span className="text-xs text-gray-500 mt-1">{reactionCounts[project.id]?.cool || 0}</span>
-        </div>
+<span className="text-xs text-gray-500 mt-1">{reactionCounts[project.id]?.cool || 0}</span>
+</div>
 
-          <div className="flex flex-col items-center">
-            <button onClick={() => onReactionToggle?.(project.id, 'fire')} className={`p-1 rounded-lg transition hover:scale-110 ${userReactions[project.id] === 'fire' ? 'bg-red-100 border-2 border-red-500' : 'hover:bg-gray-100'}`}>
-          <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMTBxZjMxbTliaXR4d2UzbDEyZnNoMW9tdmFxbmUzdzZxOGE4Y2FjMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/JQhWDr0NIkZHy/giphy.gif" alt="fire" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-xl flex-shrink-0" />
-          </button>
-            <span className="text-xs text-gray-500 mt-1">{reactionCounts[project.id]?.fire || 0}</span>
-        </div>
+<div className="flex flex-col items-center">
+<button onClick={() => onReactionToggle?.(project.id, 'fire')} className={`p-1 rounded-lg transition hover:scale-110 ${userReactions[project.id] === 'fire' ? 'bg-red-100 border-2 border-red-500' : 'hover:bg-gray-100'}`}>
+  <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMTBxZjMxbTliaXR4d2UzbDEyZnNoMW9tdmFxbmUzdzZxOGE4Y2FjMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/JQhWDr0NIkZHy/giphy.gif" alt="fire" className="w-6 h-6 rounded-lg" />
+        </button>
+<span className="text-xs text-gray-500 mt-1">{reactionCounts[project.id]?.fire || 0}</span>
+</div>
 
-        <div className="flex flex-col items-center">
-            <button onClick={() => onReactionToggle?.(project.id, 'nice')} className={`p-1 rounded-lg transition hover:scale-110 ${userReactions[project.id] === 'nice' ? 'bg-green-100 border-2 border-green-500' : 'hover:bg-gray-100'}`}>
-              <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3UzNXFtczhnOW1meGM1M3dyM3p2MmQ1OWtxaTN0eGp3YmhqbGwwbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/yJFeycRK2DB4c/giphy.gif" alt="nice" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-xl flex-shrink-0" />
-            </button>
-            <span className="text-xs text-gray-500 mt-1">{reactionCounts[project.id]?.nice || 0}</span>
-          </div>
-        </div>
+<div className="flex flex-col items-center">
+<button onClick={() => onReactionToggle?.(project.id, 'nice')} className={`p-1 rounded-lg transition hover:scale-110 ${userReactions[project.id] === 'nice' ? 'bg-green-100 border-2 border-green-500' : 'hover:bg-gray-100'}`}>
+<img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3UzNXFtczhnOW1meGM1M3dyM3p2MmQ1OWtxaTN0eGp3YmhqbGwwbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/yJFeycRK2DB4c/giphy.gif" alt="nice" className="w-6 h-6 rounded-lg" />
+</button>
+        <span className="text-xs text-gray-500 mt-1">{reactionCounts[project.id]?.nice || 0}</span>
+</div>
 
-        <div className="flex flex-col items-center">
-          <button onClick={() => onReactionToggle?.(project.id, 'wow')} className={`p-1 rounded-lg transition hover:scale-110 ${userReactions[project.id] === 'wow' ? 'bg-purple-100 border-2 border-purple-500' : 'hover:bg-gray-100'}`}>
-            <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExZGQ1cTRqM2ptZjR0MGswbXFtejhxbnRncjhtZDc3bm5ibmp5aXp5NCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Um3ljJl8jrnHy/giphy.gif" alt="wow" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-xl flex-shrink-0" />
-          </button>
-          <span className="text-xs text-gray-500 mt-1">{reactionCounts[project.id]?.wow || 0}</span>
-        </div>
-      </div>
-    </div>
+<div className="flex flex-col items-center">
+<button onClick={() => onReactionToggle?.(project.id, 'wow')} className={`p-1 rounded-lg transition hover:scale-110 ${userReactions[project.id] === 'wow' ? 'bg-purple-100 border-2 border-purple-500' : 'hover:bg-gray-100'}`}>
+<img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExZGQ1cTRqM2ptZjR0MGswbXFtejhxbnRncjhtZDc3bm5ibmp5aXp5NCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Um3ljJl8jrnHy/giphy.gif" alt="wow" className="w-6 h-6 rounded-lg" />
+</button>
+  <span className="text-xs text-gray-500 mt-1">{reactionCounts[project.id]?.wow || 0}</span>
+  </div>
+  </div>
   );
 }
 
@@ -260,16 +261,19 @@ export default function Projects() {
           </div>
         ) : (
           <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredProjects.map((p) => (
-              <ProjectCard
-                key={p.id}
-                project={p}
-                onClick={() => setSelected(p)}
-                onReactionToggle={toggleReaction}
-                reactionCounts={reactionCounts}
+          {filteredProjects.map((p) => (
+          <div key={p.id}>
+          <ProjectCard
+            project={p}
+            onClick={() => setSelected(p)}
+          />
+          <ProjectReactions
+            project={p}
+            onReactionToggle={toggleReaction}
+              reactionCounts={reactionCounts}
                 userReactions={userReactions}
-                navigate={navigate}
-              />
+                />
+              </div>
             ))}
           </section>
         )}
