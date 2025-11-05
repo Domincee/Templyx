@@ -381,22 +381,8 @@ export default function Profile() {
                                 )}
                             </div>
 
-                            {/* Buttons */}
-                            {isOwnProfile && (
+                            {/* Stats */}
                             <div className="mt-6 flex items-center justify-between">
-                            <div className="flex gap-3">
-                            <button
-                            onClick={async () => {
-                            await signOut();
-                            navigate('/', { replace: true });
-                            }}
-                            className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 hover:transform hover:-translate-y-0.5 transition-all duration-200 animate-bounce-in cursor-pointer"
-                            style={{ animationDelay: '0.2s' }}
-                            >
-                                Sign out
-                                </button>
-                            
-                                </div>
                                 <div className="flex items-center gap-6">
                                     <p className="text-sm text-gray-700">Projects published: <span className="font-semibold">{myProjects.length}</span></p>
                                     <div className="flex gap-2">
@@ -407,13 +393,27 @@ export default function Profile() {
                                         ].filter(r => reactionCounts[r.type] > 0).map(r => (
                                             <div key={r.type} className="flex flex-col items-center">
                                                 <img src={r.src} alt={r.type} className="w-8 h-8 rounded" />
-                                                <span className="text-xs text-gray-500 mt-1">{reactionCounts[r.type]}</span>
-                                            </div>
+                                            <span className="text-xs text-gray-500 mt-1">{reactionCounts[r.type]}</span>
+                                        </div>
                                         ))}
-                                    </div>
                                 </div>
                             </div>
-                            )}
+                            {/* Buttons - only for own profile */}
+                            {isOwnProfile && (
+                            <div className="flex gap-3">
+                            <button
+                            onClick={async () => {
+                                await signOut();
+                                    navigate('/', { replace: true });
+                            }}
+                            className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 hover:transform hover:-translate-y-0.5 transition-all duration-200 animate-bounce-in cursor-pointer"
+                            style={{ animationDelay: '0.2s' }}
+                            >
+                                Sign out
+                                </button>
+                                </div>
+                                )}
+                            </div>
 
                             {delErr && (
                                 <div
