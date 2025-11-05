@@ -282,7 +282,7 @@ export default function Profile() {
     return (
         <div className="min-h-screen bg-white">
             <Navbar onLoginClick={() => setAuthOpen(true)} />
-            <main className="mx-auto max-w-5xl px-4 py-12">
+            <main className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12">
                 {!user ? (
                     <div className="rounded-xl border border-black bg-white p-8 text-center">
                         <h1 className="text-2xl font-semibold text-black">You’re not logged in</h1>
@@ -297,7 +297,7 @@ export default function Profile() {
                 ) : (
                     <>
                         {/* Profile header */}
-                        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm animate-bounce-in max-w-3xl mx-auto">
+                        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm animate-bounce-in max-w-4xl mx-auto">
                             {/* Profile Header */}
                             <div className="flex items-center gap-4 mb-6 max-w-[50%]">
                                 <div className="w-16 h-16 rounded-full bg-gradient-to-r from-indigo-500 to-pink-500 p-[2px] shrink-0 hover:scale-105 transition-transform duration-300">
@@ -498,7 +498,7 @@ export default function Profile() {
                                 {isOwnProfile ? `You haven't published anything yet. Click "Publish" to add your first project.` : 'No projects published yet.'}
                             </div>
                             ) : (
-                                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
                                     {myProjects.map((proj, index) => (
                                         <div key={proj.id} className="overflow-hidden rounded-2xl border border-black bg-white animate-bounce-in" style={{ animationDelay: `${index * 0.1}s` }}>
                                             <div className="h-40 w-full bg-white">
