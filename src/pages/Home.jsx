@@ -43,7 +43,12 @@ function ProjectCard({ project, onClick, reactionCounts }) {
       <div className="p-4">
         <h3 className="text-base font-semibold text-gray-900">{project.title}</h3>
         <div className="mt-1 text-xs text-gray-600">
-          {project.owner?.full_name || (project.owner?.username ? '@' + project.owner.username : '—')}
+        {project.owner?.full_name || (project.owner?.username ? '@' + project.owner.username : '—')}
+        </div>
+        <div className="mt-1">
+          <span className="inline-block rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+            {project.category}
+          </span>
         </div>
         {project.description ? (
           <p className="mt-2 line-clamp-2 text-sm text-gray-600">{project.description}</p>
@@ -199,19 +204,19 @@ export default function Home() {
           <>
             {/* Category filter */}
             <div className="mb-6 flex flex-wrap gap-2">
-              {['All', 'Portfolio', 'UI', 'Ecommerce'].map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                    selectedCategory === cat
-                      ? 'bg-black text-white'
-                      : 'bg-white text-black border border-gray-300 hover:bg-gray-50'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
+            {['All', 'Portfolio', 'UI', 'Ecommerce', 'Dashboard', 'Blog', 'Landing'].map((cat) => (
+            <button
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+            selectedCategory === cat
+            ? 'bg-black text-white'
+            : 'bg-white text-black border border-gray-300 hover:bg-gray-50'
+            }`}
+            >
+            {cat}
+            </button>
+            ))}
             </div>
 
             <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
