@@ -43,14 +43,12 @@ function ProjectCard({ project, onClick, reactionCounts, navigate }) {
       <div className="p-4">
         <h3 className="text-base font-semibold text-gray-900">{project.title}</h3>
         <div className="mt-1 flex items-center gap-2 text-xs text-gray-600">
-        <img
-        src={project.owner?.avatar_url || 'https://via.placeholder.com/16'}
+          <img
+            src={project.owner?.avatar_url || 'https://via.placeholder.com/16'}
           alt={project.owner?.username}
-            className="w-4 h-4 rounded-full object-cover"
-          />
-          <button onClick={() => navigate(`/profile/${project.owner?.username}`)} className="hover:underline text-blue-600">
-            {project.owner?.full_name || (project.owner?.username ? '@' + project.owner.username : '—')}
-          </button>
+        className="w-4 h-4 rounded-full object-cover"
+        />
+        <span>{project.owner?.full_name || (project.owner?.username ? '@' + project.owner.username : '—')}</span>
         </div>
         <div className="mt-1">
           <span className="inline-block rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">

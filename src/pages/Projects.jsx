@@ -26,14 +26,12 @@ return (
   <h3 className="text-base font-semibold text-gray-900">{project.title}</h3>
     <p className="mt-1 line-clamp-2 text-sm text-gray-600">{project.description}</p>
       <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
-        <img
-          src={project.owner?.avatar_url || 'https://via.placeholder.com/16'}
-          alt={project.owner?.username}
-          className="w-4 h-4 rounded-full object-cover"
-        />
-        <button onClick={() => navigate(`/profile/${project.owner?.username}`)} className="hover:underline text-blue-600">
-          {project.owner?.full_name || project.owner?.username || 'Anonymous'}
-        </button>
+      <img
+      src={project.owner?.avatar_url || 'https://via.placeholder.com/16'}
+      alt={project.owner?.username}
+      className="w-4 h-4 rounded-full object-cover"
+      />
+      <span>{project.owner?.full_name || project.owner?.username || 'Anonymous'}</span>
       </div>
       </div>
       </button>
