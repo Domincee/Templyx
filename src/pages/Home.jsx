@@ -23,7 +23,7 @@ function CreateProjectCard({ onClick }) {
   );
 }
 
-function ProjectCard({ project, onClick, reactionCounts }) {
+function ProjectCard({ project, onClick, reactionCounts, navigate }) {
   return (
     <button
       onClick={onClick}
@@ -43,7 +43,9 @@ function ProjectCard({ project, onClick, reactionCounts }) {
       <div className="p-4">
         <h3 className="text-base font-semibold text-gray-900">{project.title}</h3>
         <div className="mt-1 text-xs text-gray-600">
-        {project.owner?.full_name || (project.owner?.username ? '@' + project.owner.username : '—')}
+          <button onClick={() => navigate(`/profile/${project.owner?.username}`)} className="hover:underline text-blue-600">
+            {project.owner?.full_name || (project.owner?.username ? '@' + project.owner.username : '—')}
+          </button>
         </div>
         <div className="mt-1">
           <span className="inline-block rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
@@ -230,6 +232,7 @@ export default function Home() {
                   project={p}
                   onClick={() => navigate('/projects')}
                   reactionCounts={reactionCounts}
+                  navigate={navigate}
                 />
               ))}
             </section>

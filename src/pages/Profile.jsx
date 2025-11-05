@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import AuthModal from '../components/AuthModal';
 import { useAuth } from '../contexts/AuthContext';
@@ -8,6 +8,7 @@ import ProjectFormModal from '../components/ProjectFormModal';
 import { deleteAllUserStorage } from '../utils/storageCleanup';
 
 export default function Profile() {
+    const { username } = useParams();
     const [deleting, setDeleting] = React.useState(false);
     const [delErr, setDelErr] = React.useState('');
     const [reactionCounts, setReactionCounts] = React.useState({});
@@ -15,6 +16,9 @@ export default function Profile() {
     const { user, loading, signOut } = useAuth();
     const [authOpen, setAuthOpen] = React.useState(false);
     const navigate = useNavigate();
+
+    const [profileUser, setProfileUser] = React.useState(null);
+    const [isOwnProfile, setIsOwnProfile] = React.useState(true);
 
     // Basic profile display (from auth metadata for name/email)
     const firstName =
@@ -80,27 +84,49 @@ export default function Profile() {
     }
 
     const loadProfileRow = React.useCallback(async () => {
-        if (!user) { setProfile(null); setProfileLoading(false); return; }
         setProfileLoading(true);
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('id, username, full_name')
-            .eq('id', user.id)
-            .maybeSingle();
-
-        if (error) {
-            console.error(error);
-        } else if (!data) {
-            setProfile(null);
-            setUsernameInput('');
-            setUEditing(true);
-        } else {
-            setProfile(data);
+        if (username) {
+            // Load other user's profile
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('id, username, full_name, avatar_url')
+                .eq('username', username)
+                .single();
+            if (error || !data) {
+                setProfileUser(null);
+                setIsOwnProfile(false);
+                setProfileLoading(false);
+                return;
+            }
+            setProfileUser(data);
+            setIsOwnProfile(data.id === user?.id);
+            setProfile(data); // for display, but not editable
             setUsernameInput(data.username || '');
-            setUEditing(!data.username);
+            setUEditing(false);
+        } else {
+            // Load own profile
+            if (!user) { setProfile(null); setProfileLoading(false); return; }
+            setProfileUser(user);
+            setIsOwnProfile(true);
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('id, username, full_name, avatar_url')
+                .eq('id', user.id)
+                .maybeSingle();
+            if (error) {
+                console.error(error);
+            } else if (!data) {
+                setProfile(null);
+                setUsernameInput('');
+                setUEditing(true);
+            } else {
+                setProfile(data);
+                setUsernameInput(data.username || '');
+                setUEditing(!data.username);
+            }
         }
         setProfileLoading(false);
-    }, [user]);
+    }, [user, username]);
 
     React.useEffect(() => { loadProfileRow(); }, [loadProfileRow]);
 
@@ -155,13 +181,13 @@ export default function Profile() {
     const [editingProject, setEditingProject] = React.useState(null);
 
     const loadMyProjects = React.useCallback(async () => {
-        if (!user) { setMyProjects([]); setPLoading(false); return; }
+        if (!profileUser) { setMyProjects([]); setPLoading(false); return; }
         setPLoading(true);
         setPError('');
         const { data, error } = await supabase
             .from('projects')
             .select('id, title, description, tools, image_url, live_url, repo_url, published, created_at, updated_at')
-            .eq('owner_id', user.id)
+            .eq('owner_id', profileUser.id)
             .order('created_at', { ascending: false });
         if (error) setPError(error.message);
         setMyProjects(data || []);
@@ -170,7 +196,7 @@ export default function Profile() {
         fetchReactionCounts(data.map(p => p.id));
       }
       setPLoading(false);
-    }, [user]);
+    }, [profileUser]);
 
     React.useEffect(() => { loadMyProjects(); }, [loadMyProjects]);
 
@@ -226,7 +252,11 @@ export default function Profile() {
     };
 
     if (loading || profileLoading) {
-        return <div className="min-h-screen flex items-center justify-center">Loading…</div>;
+    return <div className="min-h-screen flex items-center justify-center">Loading…</div>;
+    }
+
+    if (username && !profileUser) {
+        return <div className="min-h-screen flex items-center justify-center">User not found.</div>;
     }
 
     return (
@@ -252,20 +282,18 @@ export default function Profile() {
                             <div className="flex items-center gap-4 mb-6 max-w-[50%]">
                                 <div className="w-16 h-16 rounded-full bg-gradient-to-r from-indigo-500 to-pink-500 p-[2px] shrink-0 hover:scale-105 transition-transform duration-300">
                                     <img
-                                        src={
-                                            user.user_metadata?.picture ||
-                                            user.user_metadata?.avatar_url ||
-                                            'https://via.placeholder.com/100'
-                                        }
-                                        alt="Profile"
-                                        className="w-full h-full rounded-full border-2 border-white object-cover"
+                                    src={
+                                    isOwnProfile ? (user.user_metadata?.picture || user.user_metadata?.avatar_url || 'https://via.placeholder.com/100') : (profileUser?.avatar_url || 'https://via.placeholder.com/100')
+                                    }
+                                    alt="Profile"
+                                    className="w-full h-full rounded-full border-2 border-white object-cover"
                                     />
                                 </div>
 
                                 <div className="flex flex-col justify-center">
-                                <h1 className="text-2xl font-semibold text-gray-900">Profile</h1>
+                                <h1 className="text-2xl font-semibold text-gray-900">{isOwnProfile ? 'Profile' : `${profileUser?.full_name || username}'s Profile`}</h1>
                                 <p className="text-gray-500 text-sm mt-1">
-                                Welcome back, {firstName || user.email}!
+                                {isOwnProfile ? `Welcome back, ${firstName || user.email}!` : `Viewing ${profileUser?.full_name || username}'s profile.`}
                                 </p>
                                 </div>
                                 </div>
@@ -275,6 +303,7 @@ export default function Profile() {
                             {/* Profile Details */}
                             <div className="grid gap-4 sm:grid-cols-2">
                                 {/* Username - editable */}
+                                {isOwnProfile && (
                                 <div>
                                     <div className="text-xs font-medium uppercase text-gray-400">Username</div>
 
@@ -334,7 +363,8 @@ export default function Profile() {
 
                                     {uError && <p className="mt-1 text-xs text-red-500">{uError}</p>}
                                     {uOk && <p className="mt-1 text-xs text-green-600">{uOk}</p>}
-                                </div>
+                                    </div>
+                                )}
 
                                 {/* First name */}
                                 <div>
@@ -343,33 +373,36 @@ export default function Profile() {
                                 </div>
 
                                 {/* Email */}
+                                {isOwnProfile && (
                                 <div className="sm:col-span-2">
-                                    <div className="text-xs font-medium uppercase text-gray-400">Email</div>
+                                <div className="text-xs font-medium uppercase text-gray-400">Email</div>
                                     <div className="mt-1 font-medium text-gray-900">{user.email}</div>
                                 </div>
+                                )}
                             </div>
 
                             {/* Buttons */}
+                            {isOwnProfile && (
                             <div className="mt-6 flex items-center justify-between">
                             <div className="flex gap-3">
                             <button
                             onClick={async () => {
-                                await signOut();
-                                    navigate('/', { replace: true });
-                                }}
-                                className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 transition animate-bounce-in cursor-pointer"
+                            await signOut();
+                                navigate('/', { replace: true });
+                            }}
+                            className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 transition animate-bounce-in cursor-pointer"
                                     style={{ animationDelay: '0.2s' }}
                             >
-                                    Sign out
+                                Sign out
                                 </button>
                             <button
-                                onClick={handleDeleteAccount}
-                                disabled={deleting}
-                                className="rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-60 transition animate-bounce-in cursor-pointer"
+                            onClick={handleDeleteAccount}
+                            disabled={deleting}
+                            className="rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-60 transition animate-bounce-in cursor-pointer"
                                     style={{ animationDelay: '0.4s' }}
                             >
-                                    {deleting ? 'Deleting…' : 'Delete account'}
-                                    </button>
+                            {deleting ? 'Deleting…' : 'Delete account'}
+                                </button>
                                 </div>
                                 <div className="flex items-center gap-6">
                                     <p className="text-sm text-gray-700">Projects published: <span className="font-semibold">{myProjects.length}</span></p>
@@ -387,6 +420,7 @@ export default function Profile() {
                                     </div>
                                 </div>
                             </div>
+                            )}
 
                             {delErr && (
                                 <div
@@ -398,16 +432,18 @@ export default function Profile() {
                             )}
                         </div>
 
-                        {/* My Projects */}
+                        {/* Projects */}
                         <section className="mt-10 animate-bounce-in" style={{ animationDelay: '0.8s' }}>
-                            <div className="mb-6 flex items-center justify-between">
-                                <h2 className="text-xl font-semibold text-black">My projects</h2>
-                                <button
-                                    onClick={() => { setEditingProject(null); setProjectModalOpen(true); }}
-                                    className="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 cursor-pointer"
-                                >
-                                    Publish
+                        <div className="mb-6 flex items-center justify-between">
+                        <h2 className="text-xl font-semibold text-black">{isOwnProfile ? 'My projects' : `${profileUser?.full_name || username}'s projects`}</h2>
+                        {isOwnProfile && (
+                        <button
+                            onClick={() => { setEditingProject(null); setProjectModalOpen(true); }}
+                                className="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 cursor-pointer"
+                        >
+                                Publish
                                 </button>
+                                )}
                             </div>
 
                             {pLoading ? (
@@ -419,9 +455,9 @@ export default function Profile() {
                             ) : pError ? (
                                 <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">{pError}</div>
                             ) : myProjects.length === 0 ? (
-                                <div className="rounded-md border border-black bg-white p-6 text-center text-sm text-gray-800">
-                                    You haven’t published anything yet. Click “Publish” to add your first project.
-                                </div>
+                            <div className="rounded-md border border-black bg-white p-6 text-center text-sm text-gray-800">
+                                {isOwnProfile ? `You haven't published anything yet. Click "Publish" to add your first project.` : 'No projects published yet.'}
+                            </div>
                             ) : (
                                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                                     {myProjects.map((proj, index) => (
@@ -439,23 +475,25 @@ export default function Profile() {
                                                 <h3 className="text-base font-semibold text-black">{proj.title}</h3>
                                                 <p className="mt-1 text-sm text-gray-800">{proj.description}</p>
 
+                                                {isOwnProfile && (
                                                 <div className="mt-3 flex items-center justify-between">
-                                                    <button
-                                                        onClick={() => openEdit(proj)}
-                                                        className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all duration-200 cursor-pointer"
-                                                    >
-                                                        Edit
+                                                <button
+                                                onClick={() => openEdit(proj)}
+                                                    className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all duration-200 cursor-pointer"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                onClick={() => togglePublish(proj)}
+                                                className={`rounded-full px-3 py-1 text-xs font-semibold border cursor-pointer ${proj.published
+                                                ? 'bg-black text-white hover:bg-gray-800'
+                                                    : 'bg-white text-black border-black hover:bg-black hover:text-white'
+                                                        }`}
+                                                >
+                                                    {proj.published ? 'Published' : 'Unpublished'}
                                                     </button>
-                                                    <button
-                                                        onClick={() => togglePublish(proj)}
-                                                        className={`rounded-full px-3 py-1 text-xs font-semibold border cursor-pointer ${proj.published
-                                                                ? 'bg-black text-white hover:bg-gray-800'
-                                                                : 'bg-white text-black border-black hover:bg-black hover:text-white'
-                                                            }`}
-                                                    >
-                                                        {proj.published ? 'Published' : 'Unpublished'}
-                                                    </button>
-                                                </div>
+                                                 </div>
+                                                 )}
                                             </div>
                                         </div>
                                     ))}
