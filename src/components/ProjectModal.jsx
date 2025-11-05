@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function ProjectModal({ project, isOpen, onClose }) {
+  const navigate = useNavigate();
   if (!isOpen || !project) return null;
 
   useEffect(() => {
@@ -33,10 +35,20 @@ export default function ProjectModal({ project, isOpen, onClose }) {
         )}
 
         {project.owner && (
-          <div className="mt-4 text-sm text-gray-600">
-            Owner: <span className="font-medium text-gray-900">
-              {project.owner.full_name || `@${project.owner.username}` || 'Unknown'}
-            </span>
+        <div className="mt-4">
+        <button
+        onClick={() => navigate(`/profile/${project.owner.username}`)}
+          className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition"
+          >
+              <img
+                src={project.owner.avatar_url || 'https://via.placeholder.com/32'}
+                alt={project.owner.username}
+                className="w-6 h-6 rounded-full object-cover"
+              />
+              <span>
+                {project.owner.full_name || `@${project.owner.username}` || 'Unknown'}
+              </span>
+            </button>
           </div>
         )}
 

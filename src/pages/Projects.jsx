@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import AuthModal from '../components/AuthModal';
 import ProjectModal from '../components/ProjectModal';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 
-function ProjectCard({ project, onClick, onReactionToggle, reactionCounts, userReactions }) {
+function ProjectCard({ project, onClick, onReactionToggle, reactionCounts, userReactions, navigate }) {
 return (
 <div className="w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
 <button
@@ -24,7 +25,16 @@ return (
 <div className="p-4">
   <h3 className="text-base font-semibold text-gray-900">{project.title}</h3>
     <p className="mt-1 line-clamp-2 text-sm text-gray-600">{project.description}</p>
-      <p className="mt-1 text-xs text-gray-500">By {project.owner?.full_name || project.owner?.username || 'Anonymous'}</p>
+      <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
+        <img
+          src={project.owner?.avatar_url || 'https://via.placeholder.com/16'}
+          alt={project.owner?.username}
+          className="w-4 h-4 rounded-full object-cover"
+        />
+        <button onClick={() => navigate(`/profile/${project.owner?.username}`)} className="hover:underline text-blue-600">
+          {project.owner?.full_name || project.owner?.username || 'Anonymous'}
+        </button>
+      </div>
       </div>
       </button>
       {/* Reactions below the card */}
@@ -56,6 +66,7 @@ return (
 
 export default function Projects() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [authOpen, setAuthOpen] = useState(false);
   const [projects, setProjects] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -73,7 +84,7 @@ export default function Projects() {
         .from('projects')
         .select(`
           id, title, description, tools, image_url, live_url, repo_url, created_at,
-          owner:profiles (id, username, full_name)
+          owner:profiles (id, username, full_name, avatar_url)
         `)
         .eq('published', true)
         .order('created_at', { ascending: false });
@@ -200,6 +211,7 @@ export default function Projects() {
                 onReactionToggle={toggleReaction}
                 reactionCounts={reactionCounts}
                 userReactions={userReactions}
+                navigate={navigate}
               />
             ))}
           </section>
