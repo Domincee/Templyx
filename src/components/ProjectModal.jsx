@@ -24,7 +24,7 @@ export default function ProjectModal({ project, isOpen, onClose }) {
           <h3 className="text-xl font-semibold text-gray-900">{project.title}</h3>
           <button
             onClick={onClose}
-            className="rounded-md p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+            className="rounded-full p-2 bg-gray-100/50 text-gray-500 hover:bg-gray-200 hover:text-gray-700 hover:scale-110 transition-all duration-200 cursor-pointer"
             aria-label="Close"
           >
             ×

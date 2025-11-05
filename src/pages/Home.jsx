@@ -9,8 +9,8 @@ import { supabase } from '../lib/supabaseClient';
 function CreateProjectCard({ onClick }) {
   return (
     <button
-      onClick={onClick}
-      className="group flex w-full flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-gray-300 bg-white/70 p-6 text-center shadow-sm transition hover:border-gray-400 hover:bg-white"
+    onClick={onClick}
+    className="group flex w-full flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-gray-300 bg-white/70 p-6 text-center shadow-sm transition hover:border-gray-400 hover:bg-white hover:transform hover:-translate-y-0.5 cursor-pointer"
     >
       <div className="grid h-12 w-12 place-items-center rounded-full bg-gray-100 text-gray-500 transition group-hover:bg-gray-200">
         <span className="text-3xl leading-none">+</span>

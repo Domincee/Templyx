@@ -388,10 +388,10 @@ export default function Profile() {
                             <button
                             onClick={async () => {
                             await signOut();
-                                navigate('/', { replace: true });
+                            navigate('/', { replace: true });
                             }}
-                            className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 transition animate-bounce-in cursor-pointer"
-                                    style={{ animationDelay: '0.2s' }}
+                            className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 hover:transform hover:-translate-y-0.5 transition-all duration-200 animate-bounce-in cursor-pointer"
+                            style={{ animationDelay: '0.2s' }}
                             >
                                 Sign out
                                 </button>
@@ -431,8 +431,8 @@ export default function Profile() {
                         <h2 className="text-xl font-semibold text-black">{isOwnProfile ? 'My projects' : `${profileUser?.full_name || username}'s projects`}</h2>
                         {isOwnProfile && (
                         <button
-                            onClick={() => { setEditingProject(null); setProjectModalOpen(true); }}
-                                className="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 cursor-pointer"
+                        onClick={() => { setEditingProject(null); setProjectModalOpen(true); }}
+                        className="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 hover:transform hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
                         >
                                 Publish
                                 </button>

@@ -356,7 +356,7 @@ export default function ProjectFormModal({
           <button
             type="button"
             onClick={handleClose}
-            className="rounded-md p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+            className="rounded-full p-2 bg-gray-100/50 text-gray-500 hover:bg-gray-200 hover:text-gray-700 hover:scale-110 transition-all duration-200 cursor-pointer"
             aria-label="Close"
           >
             ×
@@ -585,14 +585,14 @@ export default function ProjectFormModal({
                 <button
                   type="button"
                   onClick={doDelete}
-                  className="rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50"
+                  className="rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 hover:transform hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
                 >
                   Delete
                 </button>
               ) : null}
               <button
                 disabled={!allValid || saving || uploading}
-                className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-60"
+                className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 hover:transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-60 cursor-pointer"
               >
                 {saving ? (isEdit ? 'Saving…' : 'Publishing…') : (isEdit ? 'Save changes' : 'Publish')}
               </button>
