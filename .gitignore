@@ -24,3 +24,50 @@ dist-ssr
 *.sw?
 
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build outputs
+build/
+dist/
+.next/
+out/
+
+# Cache directories
+.cache/
+.parcel-cache/
+.vite/
+.turbo/
+
+# OS generated files
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Database files (if any)
+*.db
+*.sqlite
+*.sqlite3
+
+# Supabase local development
+.supabase/
+
+# Vercel
+.vercel
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
