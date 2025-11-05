@@ -133,8 +133,8 @@ export default function Navbar({ onLoginClick }) {
           {user && (
             <div className="relative">
               <button
-                onClick={toggleNotifications}
-                className="relative p-2 text-black hover:text-gray-600"
+              onClick={toggleNotifications}
+              className={`relative p-2 text-black hover:text-gray-600 hover:scale-110 transition-all duration-200 cursor-pointer ${notifications.filter(n => !n.is_read).length > 0 ? 'animate-bounce' : ''}`}
               >
                 🔔
                 {notifications.filter(n => !n.is_read).length > 0 && (
