@@ -344,13 +344,13 @@ export default function ProjectFormModal({
   if (!isOpen) return null;
 
   return (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={handleClose}>
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={handleClose}>
   <div
-  className="w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl border border-gray-200 bg-white p-4 shadow-xl"
+  className="w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl"
   onClick={(e) => e.stopPropagation()}
   >
-        <div className="flex items-start justify-between">
-          <h3 className="text-xl font-semibold text-gray-900">
+        <div className="flex items-start justify-between p-4 sm:p-6">
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
             {isEdit ? 'Edit project' : 'Publish your project'}
           </h3>
           <button
@@ -364,16 +364,16 @@ export default function ProjectFormModal({
         </div>
 
         {error && (
-          <div className="mt-3 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <div className="px-4 sm:px-6 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             {error}
           </div>
         )}
 
-        <form className="mt-4" onSubmit={submit}>
-          {/* Parent Container: Flex with 2 columns */}
-          <div className="grid grid-cols-5 gap-6">
-            {/* Left Container: ~60% width (3/5) */}
-            <div className="col-span-3 space-y-4">
+        <form className="pb-6" onSubmit={submit}>
+          {/* Parent Container: Responsive grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            {/* Left Container: Full width on mobile, 3/5 on large screens */}
+            <div className="lg:col-span-3 space-y-4">
               {/* Project Title */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Project Title</label>
@@ -412,8 +412,8 @@ export default function ProjectFormModal({
                 </p>
               </div>
 
-              {/* Tools & Category (flex row) */}
-              <div className="flex gap-4">
+              {/* Tools & Category (responsive flex row) */}
+              <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Tools</label>
                   <input
@@ -457,8 +457,8 @@ export default function ProjectFormModal({
                 </div>
               </div>
 
-              {/* Live Preview & GitHub (flex row) */}
-              <div className="flex gap-4">
+              {/* Live Preview & GitHub (responsive flex row) */}
+              <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Live Preview URL</label>
                   <input
@@ -494,8 +494,8 @@ export default function ProjectFormModal({
               </div>
             </div>
 
-            {/* Right Container: ~40% width (2/5) */}
-            <div className="col-span-2 flex flex-col gap-4">
+            {/* Right Container: Full width on mobile, 2/5 on large screens */}
+            <div className="lg:col-span-2 flex flex-col gap-4">
               {/* Image Drag & Drop / Preview */}
               <div className="min-h-48">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Project Image</label>
@@ -569,7 +569,7 @@ export default function ProjectFormModal({
             </div>
           </div>
 
-          {/* Bottom Section: Spanning Both Columns */}
+          {/* Bottom Section: Full width */}
           <div className="mt-6 flex flex-col items-center gap-4">
             <label className="flex items-center gap-2 text-sm text-gray-700">
               <input
