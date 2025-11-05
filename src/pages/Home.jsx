@@ -204,7 +204,7 @@ export default function Home() {
           <>
             {/* Category filter */}
             <div className="mb-6 flex flex-wrap gap-2">
-            {['All', 'Portfolio', 'UI', 'Ecommerce', 'Dashboard', 'Blog', 'Landing'].map((cat) => (
+            {['All', 'Portfolio', 'UI', 'Ecommerce', 'Dashboard', 'Blog', 'Landing', 'Hobby', 'Personal'].map((cat) => (
             <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}

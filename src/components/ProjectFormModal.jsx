@@ -448,6 +448,8 @@ export default function ProjectFormModal({
                     <option value="Dashboard">Dashboard</option>
                     <option value="Blog">Blog</option>
                     <option value="Landing">Landing</option>
+                  <option value="Hobby">Hobby</option>
+                  <option value="Personal">Personal</option>
                   </select>
                   <p className="mt-1 text-xs text-red-600 min-h-[1.25rem]">
                     {showError(categoryOk, 'category') ? 'Please select a category.' : ''}
