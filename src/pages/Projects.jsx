@@ -239,7 +239,7 @@ export default function Projects() {
         </header>
 
         {/* Category filter */}
-        {!loading && !err && projects.length > 0 && (
+        {!loading && !err && (
           <div className="mb-6 flex flex-wrap gap-2">
             {['All', 'Portfolio', 'UI', 'Ecommerce', 'Dashboard', 'Blog', 'Landing', 'Hobby', 'Personal'].map((cat) => (
               <button
