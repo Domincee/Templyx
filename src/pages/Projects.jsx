@@ -62,15 +62,12 @@ return (
         </div>
 
         <div className="flex flex-col items-center">
-            <button onClick={() => onReactionToggle?.(project.id, 'wow')} className={`p-2 rounded-lg transition hover:scale-110 ${userReactions[project.id] === 'wow' ? 'bg-green-100 border-2 border-green-500' : 'hover:bg-gray-100'}`}>
-              <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExZGQ1cTRqM2ptZjR0MGswbXFtejhxbnRncjhtZDc3bm5ibmp5aXp5NCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Um3ljJl8jrnHy/giphy.gif" alt="wow" className="w-12 h-12 rounded-xl" />
-            </button>
-            <span className="text-xs text-gray-500 mt-1">{reactionCounts[project.id]?.nice || 0}</span>
-          </div>
+          <button onClick={() => onReactionToggle?.(project.id, 'wow')} className={`p-2 rounded-lg transition hover:scale-110 ${userReactions[project.id] === 'wow' ? 'bg-purple-100 border-2 border-purple-500' : 'hover:bg-gray-100'}`}>
+            <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExZGQ1cTRqM2ptZjR0MGswbXFtejhxbnRncjhtZDc3bm5ibmp5aXp5NCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Um3ljJl8jrnHy/giphy.gif" alt="wow" className="w-12 h-12 rounded-xl" />
+          </button>
+          <span className="text-xs text-gray-500 mt-1">{reactionCounts[project.id]?.wow || 0}</span>
         </div>
 
-
-      </div>
     </div>
   );
 }
@@ -122,7 +119,7 @@ export default function Projects() {
 
       const counts = {};
       reactions?.forEach(r => {
-        if (!counts[r.project_id]) counts[r.project_id] = { cool: 0, fire: 0, nice: 0 };
+        if (!counts[r.project_id]) counts[r.project_id] = { cool: 0, fire: 0, nice: 0, wow: 0 };
         counts[r.project_id][r.reaction_type]++;
       });
       setReactionCounts(counts);
