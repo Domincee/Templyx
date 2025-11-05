@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 
 export default function ProjectModal({ project, isOpen, onClose }) {
   const navigate = useNavigate();
-  if (!isOpen || !project) return null;
 
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose?.();
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
+
+  if (!isOpen || !project) return null;
 
   const tools = Array.isArray(project.tools) ? project.tools : [];
 
