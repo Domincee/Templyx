@@ -133,6 +133,8 @@ export default function Projects() {
         if (!counts[r.project_id]) counts[r.project_id] = { cool: 0, fire: 0, nice: 0, wow: 0 };
         counts[r.project_id][r.reaction_type]++;
       });
+      console.log('Fetched reactions:', reactions); // Debug log
+      console.log('Calculated counts:', counts); // Debug log
       setReactionCounts(counts);
 
       // Fetch user reactions
