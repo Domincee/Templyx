@@ -221,7 +221,7 @@ export default function Profile() {
     const openCreate = () => { setEditingProject(null); setProjectModalOpen(true); };
     const openEdit = (proj) => { setEditingProject(proj); setProjectModalOpen(true); };
 
-    const onSaved = (proj) => {
+    const onSaved = async (proj) => {
         setMyProjects((prev) => {
             const idx = prev.findIndex((p) => p.id === proj.id);
             if (idx >= 0) {
@@ -231,10 +231,27 @@ export default function Profile() {
             }
             return [proj, ...prev];
         });
+
+        // Refresh reaction counts to ensure real-time updates
+        if (myProjects.length > 0) {
+            await fetchReactionCounts(myProjects.map(p => p.id));
+        }
     };
 
     const onDeleted = (id) => {
         setMyProjects((prev) => prev.filter((p) => p.id !== id));
+    };
+
+    // Calculate total reactions across all projects
+    const getTotalReactions = () => {
+        const totals = { cool: 0, fire: 0, nice: 0, wow: 0 };
+        Object.values(reactionCounts).forEach(projectReactions => {
+            totals.cool += projectReactions.cool || 0;
+            totals.fire += projectReactions.fire || 0;
+            totals.nice += projectReactions.nice || 0;
+            totals.wow += projectReactions.wow || 0;
+        });
+        return totals;
     };
 
     const togglePublish = async (proj) => {
@@ -249,6 +266,8 @@ export default function Profile() {
             alert(error.message);
         } else {
             setMyProjects((prev) => prev.map((p) => (p.id === proj.id ? data : p)));
+            // Refresh reaction counts after publish status change
+            await fetchReactionCounts(myProjects.map(p => p.id));
         }
     };
 
@@ -426,8 +445,34 @@ export default function Profile() {
                             )}
                         </div>
 
+                        {/* Reactions Summary */}
+                        {!pLoading && myProjects.length > 0 && (
+                            <section className="mt-8 animate-bounce-in" style={{ animationDelay: '0.7s' }}>
+                                <h2 className="text-xl font-semibold text-black mb-4">Reactions Received</h2>
+                                <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                                    <div className="flex gap-4 justify-center">
+                                        {(() => {
+                                            const totals = getTotalReactions();
+                                            return [
+                                                { type: 'cool', count: totals.cool, src: 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGQweHE3MTVsa3JxNGg2Y3FzZThlcGQ1aW54MTU4N2xzanZlc3M0diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5gXYzsVBmjIsw/giphy.gif' },
+                                                { type: 'fire', count: totals.fire, src: 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMTBxZjMxbTliaXR4d2UzbDEyZnNoMW9tdmFxbmUzdzZxOGE4Y2FjMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/JQhWDr0NIkZHy/giphy.gif' },
+                                                { type: 'nice', count: totals.nice, src: 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3UzNXFtczhnOW1meGM1M3dyM3p2MmQ1OWtxaTN0eGp3YmhqbGwwbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/yJFeycRK2DB4c/giphy.gif' },
+                                                { type: 'wow', count: totals.wow, src: 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExZGQ1cTRqM2ptZjR0MGswbXFtejhxbnRncjhtZDc3bm5ibmp5aXp5NCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Um3ljJl8jrnHy/giphy.gif' }
+                                            ].filter(r => r.count > 0).map(r => (
+                                                <div key={r.type} className="flex flex-col items-center">
+                                                    <img src={r.src} alt={r.type} className="w-8 h-8 rounded-lg" />
+                                                    <span className="text-sm font-semibold text-gray-700 mt-2">{r.count}</span>
+                                                    <span className="text-xs text-gray-500 capitalize">{r.type}</span>
+                                                </div>
+                                            ));
+                                        })()}
+                                    </div>
+                                </div>
+                            </section>
+                        )}
+
                         {/* Projects */}
-                        <section className="mt-10 animate-bounce-in" style={{ animationDelay: '0.8s' }}>
+                        <section className="mt-8 animate-bounce-in" style={{ animationDelay: '0.8s' }}>
                         <div className="mb-6 flex items-center justify-between">
                         <h2 className="text-xl font-semibold text-black">{isOwnProfile ? 'My projects' : `${profileUser?.full_name || username}'s projects`}</h2>
                         {isOwnProfile && (
@@ -469,35 +514,7 @@ export default function Profile() {
                                             <h3 className="text-base font-semibold text-black">{proj.title}</h3>
                                             <p className="mt-1 text-sm text-gray-800">{proj.description}</p>
 
-                                            {/* Reaction counts */}
-                                            <div className="mt-3 flex gap-2 justify-center">
-                                                   {reactionCounts[proj.id]?.cool > 0 && (
-                                                     <div className="flex flex-col items-center">
-                                                       <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGQweHE3MTVsa3JxNGg2Y3FzZThlcGQ1aW54MTU4N2xzanZlc3M0diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5gXYzsVBmjIsw/giphy.gif" alt="cool" className="w-6 h-6 rounded-lg" />
-                                                       <span className="text-xs text-gray-500 mt-1">{reactionCounts[proj.id]?.cool}</span>
-                                                     </div>
-                                                   )}
-                                                   {reactionCounts[proj.id]?.fire > 0 && (
-                                                     <div className="flex flex-col items-center">
-                                                       <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMTBxZjMxbTliaXR4d2UzbDEyZnNoMW9tdmFxbmUzdzZxOGE4Y2FjMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/JQhWDr0NIkZHy/giphy.gif" alt="fire" className="w-6 h-6 rounded-lg" />
-                                                       <span className="text-xs text-gray-500 mt-1">{reactionCounts[proj.id]?.fire}</span>
-                                                     </div>
-                                                   )}
-                                                   {reactionCounts[proj.id]?.nice > 0 && (
-                                                     <div className="flex flex-col items-center">
-                                                       <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3UzNXFtczhnOW1meGM1M3dyM3p2MmQ1OWtxaTN0eGp3YmhqbGwwbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/yJFeycRK2DB4c/giphy.gif" alt="nice" className="w-6 h-6 rounded-lg" />
-                                                       <span className="text-xs text-gray-500 mt-1">{reactionCounts[proj.id]?.nice}</span>
-                                                     </div>
-                                                   )}
-                                                   {reactionCounts[proj.id]?.wow > 0 && (
-                                                     <div className="flex flex-col items-center">
-                                                       <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExZGQ1cTRqM2ptZjR0MGswbXFtejhxbnRncjhtZDc3bm5ibmp5aXp5NCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Um3ljJl8jrnHy/giphy.gif" alt="wow" className="w-6 h-6 rounded-lg" />
-                                                       <span className="text-xs text-gray-500 mt-1">{reactionCounts[proj.id]?.wow}</span>
-                                                     </div>
-                                                   )}
-                                                 </div>
-
-                                                 {isOwnProfile && (
+                                            {isOwnProfile && (
                                                  <div className="mt-4 flex items-center justify-between">
                                                 <button
                                                 onClick={() => openEdit(proj)}
