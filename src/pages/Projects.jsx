@@ -91,14 +91,23 @@ export default function Projects() {
     const load = async () => {
       setLoading(true);
       setErr('');
-      const { data, error } = await supabase
+      let query = supabase
         .from('projects')
         .select(`
-          id, title, description, tools, image_url, live_url, repo_url, created_at,
+          id, title, description, tools, image_url, live_url, repo_url, created_at, category,
           owner:profiles (id, username, full_name, avatar_url)
         `)
-        .eq('published', true)
-        .order('created_at', { ascending: false });
+        .eq('published', true);
+
+      // Apply category filter if not 'All'
+      if (selectedCategory !== 'All') {
+        query = query.eq('category', selectedCategory);
+      }
+
+      query = query.order('created_at', { ascending: false });
+
+      const { data, error } = await query;
+
       if (!alive) return;
       if (error) setErr(error.message);
       setProjects(data || []);
@@ -110,7 +119,7 @@ export default function Projects() {
     };
     load();
     return () => { alive = false; };
-  }, []);
+  }, [selectedCategory]);
 
   const fetchReactionCounts = async (projectIds) => {
     try {
@@ -217,7 +226,8 @@ export default function Projects() {
     }
   };
 
-  const filteredProjects = selectedCategory === 'All' ? projects : projects.filter(p => p.category === selectedCategory);
+  // Projects are now filtered server-side, so we use projects directly
+  const filteredProjects = projects;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -256,8 +266,11 @@ export default function Projects() {
         ) : err ? (
           <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">{err}</div>
         ) : filteredProjects.length === 0 ? (
-          <div className="rounded-md border border-gray-200 bg-white p-6 text-center text-sm text-gray-600">
-            No projects in this category. Try selecting "All" or another category.
+        <div className="rounded-md border border-gray-200 bg-white p-6 text-center text-sm text-gray-600">
+        {selectedCategory === 'All'
+            ? 'No projects available yet.'
+              : `No projects in the "${selectedCategory}" category. Try selecting "All" or another category.`
+            }
           </div>
         ) : (
           <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
