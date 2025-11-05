@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import AuthModal from '../components/AuthModal';
 import ProjectFormModal from '../components/ProjectFormModal';
+import ProjectModal from '../components/ProjectModal';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 
@@ -91,8 +92,10 @@ function ProjectCard({ project, onClick, reactionCounts, navigate }) {
 
 export default function Home() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [authOpen, setAuthOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
+  const [selected, setSelected] = useState(null);
 
   const [projects, setProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
@@ -233,7 +236,7 @@ export default function Home() {
                 <ProjectCard
                   key={p.id}
                   project={p}
-                  onClick={() => navigate('/projects')}
+                  onClick={() => setSelected(p)}
                   reactionCounts={reactionCounts}
                   navigate={navigate}
                 />
@@ -251,6 +254,13 @@ export default function Home() {
         overlayDelay={900}
       />
 
+      {/* Project detail modal */}
+      <ProjectModal
+        project={selected}
+        isOpen={!!selected}
+        onClose={() => setSelected(null)}
+      />
+
       {/* Reuse the same Project form modal used in Profile (create mode) */}
       <ProjectFormModal
         isOpen={publishOpen}
@@ -258,7 +268,7 @@ export default function Home() {
         initial={null}
         onSaved={() => {
           setPublishOpen(false);
-          navigate('/projects'); // go to the projects page where detailed modal is available
+          // Optionally refresh or navigate
         }}
       />
     </div>
