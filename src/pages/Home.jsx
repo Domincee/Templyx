@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import AuthModal from '../components/AuthModal';
 import ProjectFormModal from '../components/ProjectFormModal';
-import ProjectModal from '../components/ProjectModal';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 
@@ -94,12 +93,10 @@ export default function Home() {
   const { user } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
-  const [selected, setSelected] = useState(null);
 
   const [projects, setProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [error, setError] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
   const [reactionCounts, setReactionCounts] = useState({});
   const navigate = useNavigate();
 
@@ -189,7 +186,7 @@ export default function Home() {
     }
   };
 
-  const filteredProjects = selectedCategory === 'All' ? projects : projects.filter(p => p.category === selectedCategory);
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -209,21 +206,13 @@ export default function Home() {
           </div>
         ) : (
           <>
-            {/* Category filter */}
-            <div className="mb-6 flex flex-wrap gap-2">
-            {['All', 'Portfolio', 'UI', 'Ecommerce', 'Dashboard', 'Blog', 'Landing', 'Hobby', 'Personal'].map((cat) => (
-            <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-            selectedCategory === cat
-            ? 'bg-black text-white'
-            : 'bg-white text-black border border-gray-300 hover:bg-gray-50'
-            }`}
-            >
-            {cat}
-            </button>
-            ))}
+            {/* Brief introduction */}
+            <div className="mb-8 text-center">
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">Welcome to Templx</h1>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Discover and share creative projects built with modern web technologies.
+                Explore portfolios, UI designs, and innovative ideas from our community.
+              </p>
             </div>
 
             <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -231,11 +220,11 @@ export default function Home() {
               <CreateProjectCard onClick={handleCreateClick} />
 
               {/* Recent projects */}
-              {filteredProjects.map((p) => (
+              {projects.map((p) => (
                 <ProjectCard
                   key={p.id}
                   project={p}
-                  onClick={() => setSelected(p)}
+                  onClick={() => navigate('/projects')}
                   reactionCounts={reactionCounts}
                   navigate={navigate}
                 />
@@ -251,13 +240,6 @@ export default function Home() {
         onClose={() => setAuthOpen(false)}
         redirectPath="/home"
         overlayDelay={900}
-      />
-
-      {/* Project detail modal */}
-      <ProjectModal
-        project={selected}
-        isOpen={!!selected}
-        onClose={() => setSelected(null)}
       />
 
       {/* Reuse the same Project form modal used in Profile (create mode) */}

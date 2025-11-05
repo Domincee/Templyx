@@ -72,6 +72,7 @@ export default function Projects() {
   const [err, setErr] = useState('');
   const [reactionCounts, setReactionCounts] = useState({});
   const [userReactions, setUserReactions] = useState({});
+  const [selectedCategory, setSelectedCategory] = useState('All');
 
   useEffect(() => {
     let alive = true;
@@ -178,14 +179,35 @@ export default function Projects() {
     }
   };
 
+  const filteredProjects = selectedCategory === 'All' ? projects : projects.filter(p => p.category === selectedCategory);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar onLoginClick={() => setAuthOpen(true)} />
       <main className="mx-auto max-w-6xl px-4 py-12">
         <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Projects</h1>
-          <p className="mt-2 text-gray-600">Latest community projects.</p>
+        <h1 className="text-3xl font-bold text-gray-900">Projects</h1>
+        <p className="mt-2 text-gray-600">Latest community projects.</p>
         </header>
+
+        {/* Category filter */}
+        {!loading && !err && projects.length > 0 && (
+          <div className="mb-6 flex flex-wrap gap-2">
+            {['All', 'Portfolio', 'UI', 'Ecommerce', 'Dashboard', 'Blog', 'Landing', 'Hobby', 'Personal'].map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                  selectedCategory === cat
+                    ? 'bg-black text-white'
+                    : 'bg-white text-black border border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
 
         {loading ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -195,13 +217,13 @@ export default function Projects() {
           </div>
         ) : err ? (
           <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">{err}</div>
-        ) : projects.length === 0 ? (
+        ) : filteredProjects.length === 0 ? (
           <div className="rounded-md border border-gray-200 bg-white p-6 text-center text-sm text-gray-600">
-            No projects yet. Be the first to publish from Home!
+            No projects in this category. Try selecting "All" or another category.
           </div>
         ) : (
           <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {projects.map((p) => (
+            {filteredProjects.map((p) => (
               <ProjectCard
                 key={p.id}
                 project={p}
