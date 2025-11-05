@@ -395,14 +395,7 @@ export default function Profile() {
                             >
                                 Sign out
                                 </button>
-                            <button
-                            onClick={handleDeleteAccount}
-                            disabled={deleting}
-                            className="rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-60 transition animate-bounce-in cursor-pointer"
-                                    style={{ animationDelay: '0.4s' }}
-                            >
-                            {deleting ? 'Deleting…' : 'Delete account'}
-                                </button>
+                            
                                 </div>
                                 <div className="flex items-center gap-6">
                                     <p className="text-sm text-gray-700">Projects published: <span className="font-semibold">{myProjects.length}</span></p>
