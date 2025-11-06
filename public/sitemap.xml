@@ -2,17 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://templyx.vercel.app/</loc>
+    <lastmod>2025-11-06</lastmod>
   </url>
   <url>
     <loc>https://templyx.vercel.app/home</loc>
+    <lastmod>2025-11-06</lastmod>
   </url>
   <url>
     <loc>https://templyx.vercel.app/projects</loc>
+    <lastmod>2025-11-06</lastmod>
   </url>
   <url>
     <loc>https://templyx.vercel.app/about</loc>
+    <lastmod>2025-11-06</lastmod>
   </url>
   <url>
     <loc>https://templyx.vercel.app/profile</loc>
+    <lastmod>2025-11-06</lastmod>
   </url>
 </urlset>
