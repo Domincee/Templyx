@@ -5,7 +5,8 @@ import AuthModal from '../components/AuthModal';
 import ProjectFormModal from '../components/ProjectFormModal';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
-
+import { Helmet } from "react-helmet";
+ 
 function CreateProjectCard({ onClick }) {
   return (
     <button
@@ -190,6 +191,29 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+        <Helmet>
+        <title>Home | Templyx – Modern Developer Portfolio</title>
+        <meta name="google-site-verification" content="dKTGLbUP0q-0Vrp7j9jL70qW83DlCMx7WluUjdz6EIM" />
+        <meta
+          name="description"
+          content="Explore creative web projects on Templyx – a React and Supabase-powered platform for showcasing developer portfolios and connecting with the community."
+        />
+        <meta
+          name="keywords"
+          content="Templyx, portfolio, React projects, Supabase, developer showcase, TypeScript, Tailwind, frontend portfolio, full-stack developer, developer, github, portofolio,community"
+        />
+        <meta name="author" content="Domince Aseberos" />
+        <meta property="og:title" content="Templyx – Explore Creative Developer Projects" />
+        <meta
+          property="og:description"
+          content="Discover modern web projects, portfolios, and creative work built by developers on Templyx."
+        />
+        <meta property="og:url" content="https://templyx.vercel.app/home" />
+        <meta property="og:image" content="https://templyx.vercel.app/logo.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+      </Helmet>
+
+
       <Navbar onLoginClick={() => setAuthOpen(true)} />
 
       <main className="mx-auto max-w-6xl px-4 py-12">
