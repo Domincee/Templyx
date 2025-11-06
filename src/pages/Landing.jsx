@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthModal from '../components/AuthModal';
 import { useAuth } from '../contexts/AuthContext';
+import { Helmet } from "react-helmet";
 
 const templates = [
   { id: 'portfolio', title: 'Portfolio Inspiration', description: 'Showcase your projects and skills with stunning designs.', image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1200&auto=format&fit=crop' },
@@ -49,6 +50,8 @@ function TemplateCard({ template, onClick, delay }) {
   );
 }
 export default function Landing() {
+
+
   const [authOpen, setAuthOpen] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -78,7 +81,28 @@ export default function Landing() {
   };
 
   return (
+      
     <div className="min-h-screen bg-gray-50">
+        <Helmet>
+        <title>Templyx — Creative Portfolio Platform</title>
+        <meta
+          name="google-site-verification"
+          content="dKTGLbUP0q-0Vrp7j9jL70qW83DlCMx7WluUjdz6EIM"
+        />
+        <meta
+          name="description"
+          content="Templyx — Showcase your projects built with React, TypeScript, and Tailwind. Connect with developers and share your portfolio."
+        />
+        <meta
+          name="keywords"
+          content="Templyx, portfolio, React, Supabase, developer showcase, TypeScript, Tailwind CSS, full-stack developer, creative projects"
+        />
+        <meta property="og:title" content="Templyx — Creative Portfolio Platform" />
+        <meta property="og:description" content="Showcase your web projects and connect with creative developers on Templyx." />
+        <meta property="og:image" content="https://templyx.vercel.app/logo.png" />
+        <meta property="og:url" content="https://templyx.vercel.app/" />
+        <meta name="twitter:card" content="summary_large_image" />
+      </Helmet>
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-indigo-50 to-pink-50 min-h-[75vh] flex items-center">
       {/* Floating UI Elements */}

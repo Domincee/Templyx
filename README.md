@@ -31,7 +31,7 @@ This is a **personal portfolio template** that allows users to:
 - 📱 **Fully Responsive**: Optimized for desktop, tablet, and mobile devices
 - 🔐 **Social Authentication**: Sign up/login with Facebook and Google only
 - 📊 **Project Management**: Create, edit, and showcase projects
-- ❤️ **Social Reactions**: Users can react to projects (cool, fire, nice, wow)
+- ❤️ **Social Reactions**: Users can react to projects
 - 🏷️ **Category Filtering**: Browse projects by categories (Portfolio, UI, Ecommerce, etc.)
 - 👤 **User Profiles**: Personalized profiles with project portfolios and reaction stats
 - 💬 **Real-time Updates**: Live data synchronization across the app
@@ -75,7 +75,7 @@ Each project can include:
 
 ## 📝 License
 
-This project is for educational and hobby purposes. Feel free to use it as inspiration for your own projects!
+This project is for hobby purposes. 
 
 ## 🤝 Contributing
 
